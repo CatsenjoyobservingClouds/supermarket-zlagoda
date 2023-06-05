@@ -1,0 +1,13 @@
+table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  
+thead, tbody {
+    width: auto;
+}
+
+th {
+    text-align: center;
+    vertical-align: middle;
+}
