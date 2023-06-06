@@ -23,14 +23,13 @@ func main() {
 
 func initRouter() *gin.Engine {
 	router := gin.Default()
+	router.Use(controllers.CORSMiddleware())
 
 	router.POST("/login", employeeController.LoginEmployee)
 
 	managerGroup := router.Group("/manager")
 	managerGroup.Use(auth.ManagerAuth())
 	{
-		managerGroup.GET("/ping", controllers.Ping)
-
 		employeeGroup := managerGroup.Group("/employee")
 		{
 			employeeGroup.POST("/", employeeController.RegisterEmployee)
@@ -39,6 +38,8 @@ func initRouter() *gin.Engine {
 			employeeGroup.PATCH("/:id_employee", employeeController.UpdateEmployee)
 			employeeGroup.DELETE("/:id_employee", employeeController.DeleteEmployee)
 		}
+
+		managerGroup.GET("/ping", controllers.Ping)
 	}
 
 	//cashierGroup := router.Group("/cashier").Use(auth.CashierAuth())
