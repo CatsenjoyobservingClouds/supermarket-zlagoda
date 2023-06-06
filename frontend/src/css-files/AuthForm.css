@@ -1,0 +1,92 @@
+:root {
+    --bg-color: #f2f2f2;
+    --form-bg-color: #ffffff;
+    --text-color: #333333;
+    --input-border-color: #cccccc;
+    --input-bg-color: #f8f8f8;
+    --button-bg-color: hsl(198, 100%, 52%);
+    --button-text-color: #fffefe;
+}
+
+.auth-container {
+    background-image: url('../images/authform-background.jpg');
+    background-size: 100% 100%;
+    width: 100%;
+    background-position: center;
+    opacity: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 60px);
+    /*Subtracting the height of the navigation bar */
+    /* background-color: var(--bg-color); */
+}
+
+.auth-form {
+    width: max(200px, 45%);
+    padding: max(40px, 4%);
+    border-radius: 0px;
+    background-color: var(--form-bg-color);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.292);
+}
+
+.form-group {
+    text-align: left;
+}
+
+.auth-form h2 {
+    margin-bottom: max(8vh, 10px);
+    color: var(--text-color);
+}
+
+.auth-form label {
+    margin-left: 15%;
+    /* font-weight: bold; */
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.auth-form input[type='text'],
+.auth-form input[type='password'] {
+    width: 70%;
+    padding: 10px;
+    margin: auto;
+    margin-bottom: 25px;
+    border: 0px;
+    border-bottom: 1px solid var(--input-border-color);
+    border-radius: 0px;
+    /* background-color: var(--input-bg-color); */
+    color: var(--text-color);
+}
+
+.auth-form button[type='submit'] {
+    width: max(30%, 100px);
+    margin-top: max(4vh, 10px);
+    padding: 10px;
+    border: none;
+    border-radius: 50px;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 140, 255, 0.448);
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 576px) {
+    .auth-form {
+        width: 90%;
+        padding: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-container {
+        min-height: calc(100vh - 80px);
+    }
+
+    .auth-form {
+        width: 80%;
+        padding: 40px;
+    }
+}
