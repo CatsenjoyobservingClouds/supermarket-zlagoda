@@ -1,10 +1,14 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Container, Form, Button } from 'react-bootstrap';
+import axios from 'axios'
 import '../css-files/AuthForm.css'; // Custom CSS file for additional styling
+
+const HOST_NAME = 'http://localhost:8080';
 
 const AuthForm: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [accessToken, setAccessToken] = useState(sessionStorage.getItem('accessToken'));
 
   const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
@@ -14,12 +18,40 @@ const AuthForm: React.FC = () => {
     setPassword(e.target.value);
   };
 
+  async function loginUser() {
+    try {
+      const response = await axios.post(HOST_NAME + '/login', { 
+        username : "empl_1", 
+        password : "empl_1" 
+      })
+      
+      const { accessToken } = response.data.token;
+      sessionStorage.setItem('accessToken', accessToken);
+      setAccessToken(accessToken);
+
+    } catch (error) {
+      console.log("Error while receiving JWT token.")
+    }
+  }
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // loginUser();
+    
     // Handle form submission here
-    console.log('Username:', username);
-    console.log('Password:', password);
+    axios.post(HOST_NAME + '/login', { username : "empl_1", password : "empl_1" })
+      .then(res => {
+        const { accessToken } = res.data;
+        sessionStorage.setItem('accessToken', accessToken);
+        setAccessToken(accessToken);
+      })
+      .catch(error => {
+        console.log("Error while receiving JWT token.")
+      });
+
     // Reset the form fields
+    console.log(accessToken);
     setUsername('');
     setPassword('');
   };
