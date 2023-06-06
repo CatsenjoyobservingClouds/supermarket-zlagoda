@@ -8,7 +8,6 @@ export default function CustomerCards() {
     const endpoint = "";
     return (
         <main>
-            <div> jdnkjw</div>
             <DatabaseComponent
                 endpoint={endpoint}
                 columnNames={columnNames}

@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Container, Table, Button, InputGroup, FormControl } from 'react-bootstrap';
 import { BsSearch, BsFillCaretUpFill, BsFillCaretDownFill } from 'react-icons/bs';
 import RowComponent, { RowData } from './RowComponent';
+import StarButton from './StarButton';
 import '../css-files/DatabaseComponent.css';
+
+
 
 interface DatabaseComponentProps {
     endpoint: string; // Backend API endpoint to fetch data from
@@ -98,6 +101,9 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, columnN
                 <Button variant="secondary">
                     Print Documents
                 </Button>
+                {tableName === "Customer Card" && (
+                    <StarButton />
+                )}
             </Container>
             <Table striped bordered hover>
                 <thead>
