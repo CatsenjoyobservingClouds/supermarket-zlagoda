@@ -10,6 +10,7 @@ import (
 var employeeController *controllers.EmployeeController
 var categoryController *controllers.CategoryController
 var customerCardController *controllers.CustomerCardController
+var productController *controllers.ProductController
 
 func main() {
 	repositories.InitializeDB()
@@ -17,10 +18,12 @@ func main() {
 	employeeRepository := &repositories.PostgresEmployeeRepository{}
 	categoryRepository := &repositories.PostgresCategoryRepository{}
 	customerCardRepository := &repositories.PostgresCustomerCardRepository{}
+	productRepository := &repositories.PostgresProductRepository{}
 
 	employeeController = &controllers.EmployeeController{EmployeeRepository: employeeRepository}
 	categoryController = &controllers.CategoryController{CategoryRepository: categoryRepository}
 	customerCardController = &controllers.CustomerCardController{CustomerCardRepository: customerCardRepository}
+	productController = &controllers.ProductController{ProductRepository: productRepository}
 
 	router := initRouter()
 	router.Run(":8080")
@@ -62,6 +65,15 @@ func initRouter() *gin.Engine {
 			customerCardGroup.GET("/:card_number", customerCardController.GetCustomerCard)
 			customerCardGroup.PATCH("/:card_number", customerCardController.UpdateCustomerCard)
 			customerCardGroup.DELETE("/:card_number", customerCardController.DeleteCustomerCard)
+		}
+
+		productGroup := managerGroup.Group("/product")
+		{
+			productGroup.POST("/", productController.CreateProduct)
+			productGroup.GET("/", productController.GetAllProducts)
+			productGroup.GET("/:id_product", productController.GetProduct)
+			productGroup.PATCH("/:id_product", productController.UpdateProduct)
+			productGroup.DELETE("/:id_product", productController.DeleteProduct)
 		}
 
 		managerGroup.GET("/ping", controllers.Ping)
