@@ -37,6 +37,13 @@ func (controller *EmployeeController) RegisterEmployee(context *gin.Context) {
 		return
 	}
 
+	if err := employee.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err})
+		context.Abort()
+
+		return
+	}
+
 	if err := controller.EmployeeRepository.VerifyUsernameNotUsed(employee.Username); err != nil {
 		context.JSON(http.StatusConflict, gin.H{"error": err})
 		context.Abort()

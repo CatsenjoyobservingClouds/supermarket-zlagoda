@@ -8,12 +8,19 @@ import (
 )
 
 var employeeController *controllers.EmployeeController
+var categoryController *controllers.CategoryController
+var customerCardController *controllers.CustomerCardController
 
 func main() {
 	repositories.InitializeDB()
 
 	employeeRepository := &repositories.PostgresEmployeeRepository{}
+	categoryRepository := &repositories.PostgresCategoryRepository{}
+	customerCardRepository := &repositories.PostgresCustomerCardRepository{}
+
 	employeeController = &controllers.EmployeeController{EmployeeRepository: employeeRepository}
+	categoryController = &controllers.CategoryController{CategoryRepository: categoryRepository}
+	customerCardController = &controllers.CustomerCardController{CustomerCardRepository: customerCardRepository}
 
 	router := initRouter()
 	router.Run(":8080")
@@ -37,6 +44,24 @@ func initRouter() *gin.Engine {
 			employeeGroup.GET("/:id_employee", employeeController.GetEmployeeById)
 			employeeGroup.PATCH("/:id_employee", employeeController.UpdateEmployee)
 			employeeGroup.DELETE("/:id_employee", employeeController.DeleteEmployee)
+		}
+
+		categoryGroup := managerGroup.Group("/category")
+		{
+			categoryGroup.POST("/", categoryController.CreateCategory)
+			categoryGroup.GET("/", categoryController.GetAllCategories)
+			categoryGroup.GET("/:category_number", categoryController.GetCategory)
+			categoryGroup.PATCH("/:category_number", categoryController.UpdateCategory)
+			categoryGroup.DELETE("/:category_number", categoryController.DeleteCategory)
+		}
+
+		customerCardGroup := managerGroup.Group("/customerCard")
+		{
+			customerCardGroup.POST("/", customerCardController.CreateCustomerCard)
+			customerCardGroup.GET("/", customerCardController.GetAllCustomerCards)
+			customerCardGroup.GET("/:card_number", customerCardController.GetCustomerCard)
+			customerCardGroup.PATCH("/:card_number", customerCardController.UpdateCustomerCard)
+			customerCardGroup.DELETE("/:card_number", customerCardController.DeleteCustomerCard)
 		}
 
 		managerGroup.GET("/ping", controllers.Ping)

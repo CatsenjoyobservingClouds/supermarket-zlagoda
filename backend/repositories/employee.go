@@ -1,10 +1,8 @@
 package repositories
 
 import (
-	"errors"
-	"fmt"
-
 	"Zlahoda_AIS/models"
+	"errors"
 )
 
 type PostgresEmployeeRepository struct {
@@ -39,7 +37,7 @@ func (repo *PostgresEmployeeRepository) CreateEmployee(employee *models.Employee
 		return nil, err
 	}
 
-	employee.ID = fmt.Sprintf("empl_%s", newId)
+	employee.ID = newId
 
 	return employee, nil
 }

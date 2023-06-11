@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
@@ -39,6 +40,18 @@ func (employee *Employee) CheckPassword(providedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(employee.Password), []byte(providedPassword))
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (employee *Employee) VerifyCorrectness() error {
+	if !employee.BirthDate.Before(time.Now().AddDate(-18, 0, 0)) {
+		return errors.New("employee too young")
+	}
+
+	if employee.Salary < 0 {
+		return errors.New("salary cannot be less than 0")
 	}
 
 	return nil
