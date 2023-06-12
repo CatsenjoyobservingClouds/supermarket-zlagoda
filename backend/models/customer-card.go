@@ -6,7 +6,7 @@ import (
 )
 
 type CustomerCard struct {
-	CardNumber      string         `json:"card_number,omitempty" db:"card_number"`
+	CardNumber      string         `json:"card_number" db:"card_number"`
 	LastName        string         `json:"cust_surname" db:"cust_surname"`
 	FirstName       string         `json:"cust_name" db:"cust_name"`
 	MiddleName      sql.NullString `json:"cust_patronymic" db:"cust_patronymic"`

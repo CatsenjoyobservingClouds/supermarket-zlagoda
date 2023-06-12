@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -32,7 +33,13 @@ func GenerateJWT(username string, role models.Role) (tokenString string, err err
 	return token.SignedString(jwtKey)
 }
 
-func validateToken(signedToken string) (models.Role, error) {
+func validateTokenAndReturnClaims(signedToken string) (*JWTClaim, error) {
+	if !strings.HasPrefix(signedToken, "Bearer ") {
+		return nil, errors.New("request does not contain a bearer access token")
+	}
+
+	signedToken = signedToken[7:]
+
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&JWTClaim{},
@@ -41,23 +48,17 @@ func validateToken(signedToken string) (models.Role, error) {
 		},
 	)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	claims, ok := token.Claims.(*JWTClaim)
 	if !ok {
-		err = errors.New("couldn't parse claims")
-
-		return "", err
+		return nil, errors.New("couldn't parse claims")
 	}
-
-	role := claims.Role
 
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		err = errors.New("token expired")
-
-		return role, err
+		return nil, errors.New("token expired")
 	}
 
-	return role, nil
+	return claims, nil
 }
