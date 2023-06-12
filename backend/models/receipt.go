@@ -18,14 +18,14 @@ type Receipt struct {
 	EmployeeMiddleName sql.NullString `json:"empl_patronymic" db:"empl_patronymic"`
 
 	CardNumber         sql.NullString `json:"card_number" db:"card_number"`
-	CustomerLastName   string         `json:"cust_surname" db:"cust_surname"`
-	CustomerFirstName  string         `json:"cust_name" db:"cust_name"`
+	CustomerLastName   sql.NullString `json:"cust_surname" db:"cust_surname"`
+	CustomerFirstName  sql.NullString `json:"cust_name" db:"cust_name"`
 	CustomerMiddleName sql.NullString `json:"cust_patronymic" db:"cust_patronymic"`
 
 	Products []ReceiptProduct `json:"products,omitempty" db:"-"`
 }
 
-func NewReceipt(employeeID string, cardNumber sql.NullString, products []ReceiptProduct) (*Receipt, error) {
+func NewReceipt(cardNumber sql.NullString, products []ReceiptProduct) (*Receipt, error) {
 	if len(products) < 1 {
 		return nil, errors.New("a receipt cannot have 0 products")
 	}
@@ -39,7 +39,6 @@ func NewReceipt(employeeID string, cardNumber sql.NullString, products []Receipt
 		PrintDate:  time.Now(),
 		TotalSum:   totalSum,
 		VAT:        totalSum * 0.2,
-		EmployeeID: employeeID,
 		CardNumber: cardNumber,
 		Products:   products,
 	}, nil
