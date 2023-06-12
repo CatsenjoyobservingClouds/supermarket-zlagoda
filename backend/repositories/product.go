@@ -30,13 +30,13 @@ func (repo *PostgresProductRepository) GetAllProducts(orderBy string, ascDesc st
 	getAllQuery := `SELECT * FROM "product" INNER JOIN category c on c.category_number = product.category_number`
 	getAllSortedQuery := fmt.Sprintf("%v ORDER BY %s %s", getAllQuery, orderBy, ascDesc)
 
-	var categories []models.Product
-	err := db.Select(&categories, getAllSortedQuery)
+	var products []models.Product
+	err := db.Select(&products, getAllSortedQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	return categories, nil
+	return products, nil
 }
 
 func (repo *PostgresProductRepository) GetProductByID(productID int) (*models.Product, error) {

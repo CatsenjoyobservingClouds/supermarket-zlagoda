@@ -11,6 +11,7 @@ var employeeController *controllers.EmployeeController
 var categoryController *controllers.CategoryController
 var customerCardController *controllers.CustomerCardController
 var productController *controllers.ProductController
+var productInStoreController *controllers.ProductInStoreController
 
 func main() {
 	repositories.InitializeDB()
@@ -19,11 +20,13 @@ func main() {
 	categoryRepository := &repositories.PostgresCategoryRepository{}
 	customerCardRepository := &repositories.PostgresCustomerCardRepository{}
 	productRepository := &repositories.PostgresProductRepository{}
+	productInStoreRepository := &repositories.PostgresProductInStoreRepository{}
 
 	employeeController = &controllers.EmployeeController{EmployeeRepository: employeeRepository}
 	categoryController = &controllers.CategoryController{CategoryRepository: categoryRepository}
 	customerCardController = &controllers.CustomerCardController{CustomerCardRepository: customerCardRepository}
 	productController = &controllers.ProductController{ProductRepository: productRepository}
+	productInStoreController = &controllers.ProductInStoreController{ProductInStoreRepository: productInStoreRepository}
 
 	router := initRouter()
 	router.Run(":8080")
@@ -76,13 +79,22 @@ func initRouter() *gin.Engine {
 			productGroup.DELETE("/:id_product", productController.DeleteProduct)
 		}
 
+		productInStoreGroup := managerGroup.Group("/storeProduct")
+		{
+			productInStoreGroup.POST("/", productInStoreController.CreateProductInStore)
+			productInStoreGroup.GET("/", productInStoreController.GetAllProductInStores)
+			productInStoreGroup.GET("/:UPC", productInStoreController.GetProductInStore)
+			productInStoreGroup.PATCH("/:UPC", productInStoreController.UpdateProductInStore)
+			productInStoreGroup.DELETE("/:UPC", productInStoreController.DeleteProductInStore)
+		}
+
 		managerGroup.GET("/ping", controllers.Ping)
 	}
 
-	//cashierGroup := router.Group("/cashier").Use(auth.CashierAuth())
-	//{
-	//
-	//}
+	cashierGroup := router.Group("/cashier").Use(auth.CashierAuth())
+	{
+		cashierGroup.GET("/ping", controllers.Ping)
+	}
 
 	return router
 }
