@@ -2,12 +2,13 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
 type Employee struct {
-	ID                string         `json:"id_employee,omitempty" db:"id_employee"`
+	ID                string         `json:"id_employee" db:"id_employee"`
 	LastName          string         `json:"empl_surname" db:"empl_surname"`
 	FirstName         string         `json:"empl_name" db:"empl_name"`
 	MiddleName        sql.NullString `json:"empl_patronymic,omitempty" db:"empl_patronymic"`
@@ -20,8 +21,8 @@ type Employee struct {
 	Street            string         `json:"street" db:"street"`
 	ZipCode           string         `json:"zip_code" db:"zip_code"`
 	Username          string         `json:"username" db:"username"`
-	Password          string         `json:"password,omitempty" db:"password"`
-	IsPasswordDefault bool           `json:"is_password_default,omitempty" db:"is_password_default"`
+	Password          string         `json:"password" db:"password"`
+	IsPasswordDefault bool           `json:"is_password_default" db:"is_password_default"`
 }
 
 func (employee *Employee) HashPassword(password string) error {
@@ -39,6 +40,18 @@ func (employee *Employee) CheckPassword(providedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(employee.Password), []byte(providedPassword))
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (employee *Employee) VerifyCorrectness() error {
+	if !employee.BirthDate.Before(time.Now().AddDate(-18, 0, 0)) {
+		return errors.New("employee too young")
+	}
+
+	if employee.Salary < 0 {
+		return errors.New("salary cannot be less than 0")
 	}
 
 	return nil

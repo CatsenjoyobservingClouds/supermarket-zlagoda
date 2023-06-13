@@ -1,10 +1,8 @@
 package repositories
 
 import (
-	"errors"
-	"fmt"
-
 	"Zlahoda_AIS/models"
+	"errors"
 )
 
 type PostgresEmployeeRepository struct {
@@ -39,7 +37,7 @@ func (repo *PostgresEmployeeRepository) CreateEmployee(employee *models.Employee
 		return nil, err
 	}
 
-	employee.ID = fmt.Sprintf("empl_%s", newId)
+	employee.ID = newId
 
 	return employee, nil
 }
@@ -68,7 +66,7 @@ func (repo *PostgresEmployeeRepository) GetAllEmployees() ([]models.Employee, er
 	return employees, nil
 }
 
-func (repo *PostgresEmployeeRepository) GetEmployeeById(id string) (*models.Employee, error) {
+func (repo *PostgresEmployeeRepository) GetAllInfo(id string) (*models.Employee, error) {
 	getEmployeeByIdQuery := `SELECT * FROM employee WHERE id_employee = $1;`
 
 	var employee models.Employee

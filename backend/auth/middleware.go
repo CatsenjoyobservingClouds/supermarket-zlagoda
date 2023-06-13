@@ -1,22 +1,13 @@
 package auth
 
 import (
-	"github.com/gin-gonic/gin"
-
 	"Zlahoda_AIS/models"
+	"github.com/gin-gonic/gin"
 )
 
 func ManagerAuth() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		tokenString := context.GetHeader("Authorization")
-		if tokenString == "" {
-			context.JSON(401, gin.H{"error": "request does not contain an access token"})
-			context.Abort()
-
-			return
-		}
-
-		role, err := validateToken(tokenString)
+		err := savePayloadToContext(context)
 		if err != nil {
 			context.JSON(401, gin.H{"error": err.Error()})
 			context.Abort()
@@ -24,7 +15,7 @@ func ManagerAuth() gin.HandlerFunc {
 			return
 		}
 
-		if role != models.Manager {
+		if context.MustGet("role").(models.Role) != models.Manager {
 			context.JSON(401, gin.H{"error": "not a manager"})
 			context.Abort()
 
@@ -37,15 +28,7 @@ func ManagerAuth() gin.HandlerFunc {
 
 func CashierAuth() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		tokenString := context.GetHeader("Authorization")
-		if tokenString == "" {
-			context.JSON(401, gin.H{"error": "request does not contain an access token"})
-			context.Abort()
-
-			return
-		}
-
-		role, err := validateToken(tokenString)
+		err := savePayloadToContext(context)
 		if err != nil {
 			context.JSON(401, gin.H{"error": err.Error()})
 			context.Abort()
@@ -53,8 +36,8 @@ func CashierAuth() gin.HandlerFunc {
 			return
 		}
 
-		if role != models.Cashier {
-			context.JSON(401, gin.H{"error": "not a cashier"})
+		if context.MustGet("role").(models.Role) != models.Cashier {
+			context.JSON(401, gin.H{"error": "not a manager"})
 			context.Abort()
 
 			return
@@ -62,4 +45,17 @@ func CashierAuth() gin.HandlerFunc {
 
 		context.Next()
 	}
+}
+
+func savePayloadToContext(context *gin.Context) error {
+	tokenString := context.GetHeader("Authorization")
+	claims, err := validateTokenAndReturnClaims(tokenString)
+	if err != nil {
+		return err
+	}
+
+	context.Set("username", claims.Username)
+	context.Set("role", claims.Role)
+
+	return nil
 }

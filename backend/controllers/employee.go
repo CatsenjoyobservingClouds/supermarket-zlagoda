@@ -14,7 +14,7 @@ type EmployeeRepository interface {
 	CreateEmployee(employee *models.Employee) (*models.Employee, error)
 	GetEmployeeByUsername(username string) (*models.Employee, error)
 	GetAllEmployees() ([]models.Employee, error)
-	GetEmployeeById(id string) (*models.Employee, error)
+	GetAllInfo(id string) (*models.Employee, error)
 	UpdateEmployeeById(employee *models.Employee) (*models.Employee, error)
 	DeleteEmployeeById(id string) error
 }
@@ -32,6 +32,13 @@ func (controller *EmployeeController) RegisterEmployee(context *gin.Context) {
 	var employee models.Employee
 	if err := context.ShouldBindJSON(&employee); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
+
+	if err := employee.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err})
 		context.Abort()
 
 		return
@@ -113,7 +120,7 @@ func (controller *EmployeeController) GetAllEmployees(context *gin.Context) {
 func (controller *EmployeeController) GetEmployeeById(context *gin.Context) {
 	id := context.Param("id_employee")
 
-	employee, err := controller.EmployeeRepository.GetEmployeeById(id)
+	employee, err := controller.EmployeeRepository.GetAllInfo(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		context.Abort()
