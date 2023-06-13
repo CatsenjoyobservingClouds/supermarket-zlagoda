@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import NavBar from './components/NavBar';
 import Login from './pages/Login';
 import Employees from './pages/Employees';
@@ -12,55 +12,252 @@ import CustomerCards from './pages/CustomerCards';
 import StoreProducts from './pages/StoreProducts';
 import Categories from './pages/Categories';
 import Checks from './pages/Checks';
+import Home from './pages/Home';
+import jwt from 'jwt-decode';
+import { Navbar } from 'react-bootstrap';
 // import Layout from './components/Layout';
 
-const ROLES = {
-  'Manager': 2001,
-  'Cashier': 1984
+
+interface ProtectedRouteProps {
+  path: string,
+  page: React.JSX.Element
 }
+
+interface RestrictedPages {
+  categories: boolean;
+  employees: boolean;
+  products: boolean;
+  checks: boolean;
+  sales: boolean;
+  customer_cards: boolean;
+  products_in_the_store: boolean
+}
+
+export interface IIndexable {
+  [key: string]: any
+}
+
+interface UserRoles {
+  [key: string]: RestrictedPages;
+}
+
+const userRoles: UserRoles = {
+  Manager: {
+    categories: true,
+    employees: true,
+    products: true,
+    checks: true,
+    sales: false,
+    customer_cards: true,
+    products_in_the_store: true,
+  },
+  Cashier: {
+    categories: false,
+    employees: true,
+    products: true,
+    checks: true,
+    sales: false,
+    customer_cards: true,
+    products_in_the_store: true,
+  },
+};
+
 
 function App() {
+  const [userRole, setUserRole] = useState(localStorage.getItem("role") || null);
+
+  const handleLogout = () => {
+    setUserRole(null);
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
+    localStorage.removeItem("jwt");
+  };
+
+  const handleLogin = (jwt_token: string) => {
+    const parsedJWT = jwt(jwt_token) as IIndexable
+    localStorage.setItem("username", parsedJWT["username" as keyof IIndexable])
+    localStorage.setItem("role", parsedJWT["role" as keyof IIndexable])
+    localStorage.setItem("jwt", jwt_token);
+    setUserRole(localStorage.getItem("role"));
+  }
+
+  const hasAccess = (path: string) => {
+    if (!userRole) {
+      console.log("oop");
+      return false;
+    }
+    console.log("done");
+    const resource = path.replace(/^\//, '').replace("-", "_");
+    return userRoles[userRole as keyof UserRoles][resource as keyof RestrictedPages] || false;
+  };
+
+
   return (
-    // <Routes>
-    //   <Route path="/" element={<Login />} />
-    //   <Route path="employees" element={<Employees />} />
-    // </Routes>
     <div className='App'>
-      <Router>
+      <BrowserRouter>
         <NavBar />
         <Routes>
-          <Route path='/' element={<Login />} />
+          <Route
+            path="/"
+            element={
+              userRole ? <Home user={userRole} onLogout={handleLogout} /> : <Navigate to="/login" />
+            }
+          />
 
-          <Route path='/employees' element={<Employees />} />
-          <Route path='/products' element={<Products />} />
-          <Route path='/checks' element={<Checks />} />
-          <Route path='/sales' element={<Sales />} />
-          <Route path='/customer-cards' element={<CustomerCards />} />
-          <Route path='/categories' element={<Categories />} />
-          <Route path='/products-in-the-store' element={<StoreProducts />} />
-
-          {/* <Route path='about' element={<About />} />
-          <Route path='cocktail/:id' element={<SingleCocktail />} />
-          <Route path='*' element={<Error />} /> */}
+          <Route path='/login' element={<Login onLogin={handleLogin} />} />
+          <Route path='/employees' element={hasAccess("/employees") ? <Employees /> : <Navigate to="/" />} />
+          <Route path='/products' element={hasAccess("/products") ? <Products /> : <Navigate to="/" />} />
+          <Route path='/checks' element={hasAccess("/checks") ? <Checks /> : <Navigate to="/" />} />
+          {/* <Route path='/sales' element={hasAccess("/sales") ? <Sales /> : <Navigate to="/" />} /> */}
+          <Route path='/customer-cards' element={hasAccess("/customer-cards") ? <CustomerCards /> : <Navigate to="/" />} />
+          <Route path='/categories' element={hasAccess("/categories") ? <Categories /> : <Navigate to="/" />} />
+          <Route path='/products-in-the-store' element={hasAccess("/products-in-the-store") ? <StoreProducts /> : <Navigate to="/" />} />
         </Routes>
-      </Router>
+      </BrowserRouter>
     </div>
-
-    // {/* <header className="App-header">
-    //   <img src={logo} className="App-logo" alt="logo" />
-    //   <p>
-    //     Edit <code>src/App.tsx</code> and save to reload.
-    //   </p>
-    //   <a
-    //     className="App-link"
-    //     href="https://reactjs.org"
-    //     target="_blank"
-    //     rel="noopener noreferrer"
-    //   >
-    //     Learn React
-    //   </a>
-    // </header> */}
-  );
+  )
 }
+
+// return (
+//   <div className="App">
+//     <BrowserRouter>
+//       {<Navigate to="/" />}
+//       <Routes>
+//         
+//         <Route path="/login" element={<Login />} />
+//         <NavBar />
+// <ProtectedRoute
+//   path="/employees"
+//   page={<Employees />}
+// />
+//         <ProtectedRoute
+//           path="/products"
+//           page={<Products />}
+//         />
+//         <ProtectedRoute
+//           path="/checks"
+//           page={<Checks />}
+//         />
+//         <ProtectedRoute
+//           path="/categories"
+//           page={<Categories />}
+//         />
+//         <ProtectedRoute
+//           path="/customer-cards"
+//           page={<CustomerCards />}
+//         />
+//         <ProtectedRoute
+//           path="/products-in-the-store"
+//           page={<StoreProducts />}
+//         />
+//         <ProtectedRoute
+//           path="/sales"
+//           page={<Sales />}
+//         />
+//       </Routes>
+//     </BrowserRouter>
+//   </div >
+
+
+// const browserRouter = createBrowserRouter([
+//   {
+//     path: "/",
+//     element: user ? <Menu onLogout={handleLogout} /> :
+//       <Login onLogin={(role) => {
+//         setUser(role);
+//         localStorage.setItem("userRole", role);
+//       }} />,
+//     children: [
+//       {
+//         path: "*",
+//         element: (
+//           <Routes>
+//             <ProtectedRoute
+//               path="employees"
+//               page={<Employees />}
+//             />
+//             <ProtectedRoute
+//               path="products"
+//               page={<Products />}
+//             />
+//             <ProtectedRoute
+//               path="checks"
+//               page={<Checks />}
+//             />
+//             <ProtectedRoute
+//               path="categories"
+//               page={<Categories />}
+//             />
+//             <ProtectedRoute
+//               path="customer-cards"
+//               page={<CustomerCards />}
+//             />
+//             <ProtectedRoute
+//               path="products-in-the-store"
+//               page={<StoreProducts />}
+//             />
+//             <ProtectedRoute
+//               path="sales"
+//               page={<Sales />}
+//             />
+//           </Routes>
+//         ),
+//       },
+//     ],
+//   },
+// ]);
+
+// return (
+//   <div className="App">
+//     <>
+//       <RouterProvider router={browserRouter}>
+//         <Outlet />
+//       </RouterProvider>
+//     </>
+//   </div>
+// );
+
+// return (
+//   // <Routes>
+//   //   <Route path="/" element={<Login />} />
+//   //   <Route path="employees" element={<Employees />} />
+//   // </Routes>
+//   <div className='App'>
+//     <Router>
+//       <NavBar />
+//       <Routes>
+//         <Route path='/' element={<Login />} />
+
+//         <Route path='/employees' element={<Employees />} />
+//         <Route path='/products' element={<Products />} />
+//         <Route path='/checks' element={<Checks />} />
+//         <Route path='/sales' element={<Sales />} />
+//         <Route path='/customer-cards' element={<CustomerCards />} />
+//         <Route path='/categories' element={<Categories />} />
+//         <Route path='/products-in-the-store' element={<StoreProducts />} />
+
+//         {/* <Route path='about' element={<About />} />
+//         <Route path='cocktail/:id' element={<SingleCocktail />} />
+//         <Route path='*' element={<Error />} /> */}
+//       </Routes>
+//     </Router>
+//   </div>
+
+//   // {/* <header className="App-header">
+//   //   <img src={logo} className="App-logo" alt="logo" />
+//   //   <p>
+//   //     Edit <code>src/App.tsx</code> and save to reload.
+//   //   </p>
+//   //   <a
+//   //     className="App-link"
+//   //     href="https://reactjs.org"
+//   //     target="_blank"
+//   //     rel="noopener noreferrer"
+//   //   >
+//   //     Learn React
+//   //   </a>
+//   // </header> */}
+// );
+// }
 
 export default App;

@@ -72,6 +72,13 @@
     box-shadow: 0 2px 4px rgba(0, 140, 255, 0.448);
 }
 
+.alert-danger {
+    padding: 10px 10px;
+    width: fit-content;
+    margin-inline: auto;
+    border-radius: 0;
+}
+
 /* Media Queries for Responsiveness */
 @media (max-width: 576px) {
     .auth-form {

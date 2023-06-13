@@ -10,6 +10,7 @@ export default function StoreProducts() {
         <main>
             <DatabaseComponent
                 endpoint={endpoint}
+                handleData={() => {}}
                 columnNames={columnNames}
                 tableName={tableName} />
         </main>

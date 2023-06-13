@@ -1,10 +1,12 @@
 import React from 'react'
-import AuthForm from '../components/AuthForm';
+import AuthForm, {AuthFormProps} from '../components/AuthForm';
 
-export default function Login() {
+const Login: React.FC<AuthFormProps> = ({onLogin}) => {
   return (
     <main>
-        <AuthForm />
+        <AuthForm onLogin={onLogin}/>
     </main>
   )
 }
+
+export default Login;

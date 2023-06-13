@@ -10,6 +10,7 @@ export default function Categories() {
         <main>
             <DatabaseComponent
                 endpoint={endpoint}
+                handleData={() => {}}
                 columnNames={columnNames}
                 tableName={tableName} />
         </main>

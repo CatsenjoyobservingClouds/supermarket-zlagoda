@@ -3,35 +3,54 @@ import { Container, Table, Button, InputGroup, FormControl } from 'react-bootstr
 import { BsSearch, BsFillCaretUpFill, BsFillCaretDownFill } from 'react-icons/bs';
 import RowComponent, { RowData } from './RowComponent';
 import StarButton from './StarButton';
+import axios from 'axios';
 import '../css-files/DatabaseComponent.css';
 
 
 
 interface DatabaseComponentProps {
     endpoint: string; // Backend API endpoint to fetch data from
+    handleData: Function,
     columnNames: string[]; // Array of column names
     tableName: string;
 }
 
-const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, columnNames, tableName }) => {
+const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, handleData, columnNames, tableName }) => {
     const [rows, setRows] = useState<RowData[]>([]);
-    const [sortedBy, setSortedBy] = useState<string | null>(null);
+    const [sortedBy, setSortedBy] = useState<string>('');
     const [searchText, setSearchText] = useState('');
 
+    
+
+    // const fetchData = async () => {
+    //     try {
+    //         const response = await fetch(endpoint);
+    //         const data = await response.json();
+    //         setRows(data);
+    //     } catch (error) {
+    //         console.error('Error fetching data:', error);
+    //     }
+    // };
+
     useEffect(() => {
-        // fetchData();
-        setRows([{ id: 1, name: 'John Doe', age: 30 }, { id: 2, name: 'Anna Doe', age: 20 }, { id: 3, name: 'Anton Doe', age: 10 }])
+        fetchData;
     }, []);
 
-    const fetchData = async () => {
-        try {
-            const response = await fetch(endpoint);
-            const data = await response.json();
-            setRows(data);
-        } catch (error) {
-            console.error('Error fetching data:', error);
+    const fetchData = axios.get(endpoint + "/", {
+        headers: {
+            "Authorization": sessionStorage.getItem('jwt')
         }
-    };
+    })
+        .then(response => {
+            const data = response.data;
+            setRows(handleData(data));
+            // handleSort(sortedBy);
+            filteredRows;
+            
+        })
+        .catch(error => {
+            console.log("Error fetching data:", error);
+        });
 
     const handleEditRow = (id: number, newData: RowData) => {
         setRows((prevRows) =>
