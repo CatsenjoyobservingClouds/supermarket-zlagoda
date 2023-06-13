@@ -80,12 +80,7 @@ func (repo *PostgresCustomerCardRepository) UpdateCustomerCardByNumber(customerC
 }
 
 func (repo *PostgresCustomerCardRepository) DeleteCustomerCardByNumber(cardNumber string) error {
-	deleteByNumberQuery := `DELETE FROM customer_card WHERE card_number = $1;`
+	deleteByNumberQuery := `DELETE FROM customer_card WHERE card_number = $1 RETURNING card_number`
 
-	_, err := db.Exec(deleteByNumberQuery, cardNumber)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return db.QueryRow(deleteByNumberQuery, cardNumber).Scan(&cardNumber)
 }

@@ -3,6 +3,7 @@ package repositories
 import (
 	"Zlahoda_AIS/models"
 	"errors"
+	"fmt"
 )
 
 type PostgresEmployeeRepository struct {
@@ -54,11 +55,12 @@ func (repo *PostgresEmployeeRepository) GetEmployeeByUsername(username string) (
 	return &employee, nil
 }
 
-func (repo *PostgresEmployeeRepository) GetAllEmployees() ([]models.Employee, error) {
-	getAllEmployeesQuery := `SELECT * FROM employee ORDER BY empl_surname;`
+func (repo *PostgresEmployeeRepository) GetAllEmployees(orderBy string, ascDesc string) ([]models.Employee, error) {
+	getAllQuery := `SELECT * FROM employee`
+	getAllSortedQuery := fmt.Sprintf("%v ORDER BY %s %s", getAllQuery, orderBy, ascDesc)
 
 	var employees []models.Employee
-	err := db.Select(&employees, getAllEmployeesQuery)
+	err := db.Select(&employees, getAllSortedQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -106,12 +108,7 @@ func (repo *PostgresEmployeeRepository) UpdateEmployeeById(employee *models.Empl
 }
 
 func (repo *PostgresEmployeeRepository) DeleteEmployeeById(id string) error {
-	deleteEmployeeByIdQuery := `DELETE FROM employee WHERE id_employee = $1;`
+	deleteEmployeeByIdQuery := `DELETE FROM employee WHERE id_employee = $1 RETURNING id_employee;`
 
-	_, err := db.Exec(deleteEmployeeByIdQuery, id)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return db.QueryRow(deleteEmployeeByIdQuery, id).Scan(&id)
 }
