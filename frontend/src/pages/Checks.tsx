@@ -14,7 +14,8 @@ export default function Checks() {
         <main>
             <DatabaseComponent
                 endpoint={endpoint}
-                handleData={() => {}}
+                decodeData={() => {}}
+                encodeData={() => {}}
                 columnNames={columnNames}
                 tableName={tableName} />
         </main>

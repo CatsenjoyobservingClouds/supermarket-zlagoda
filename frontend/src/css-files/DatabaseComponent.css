@@ -4,10 +4,19 @@ table {
   }
   
 thead, tbody {
-    width: auto;
+    width: fit-content;
 }
 
 th {
     text-align: center;
     vertical-align: middle;
 }
+
+.database-container {
+    max-width: 92%;
+    margin: auto;
+}
+
+thead {
+    background-color: rgba(0, 126, 194, 0.047);
+}   

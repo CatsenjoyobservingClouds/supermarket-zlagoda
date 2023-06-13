@@ -80,7 +80,7 @@
 }
 
 /* Media Queries for Responsiveness */
-@media (max-width: 576px) {
+/* @media (max-width: 576px) {
     .auth-form {
         width: 90%;
         padding: 30px;
@@ -96,4 +96,4 @@
         width: 80%;
         padding: 40px;
     }
-}
+} */

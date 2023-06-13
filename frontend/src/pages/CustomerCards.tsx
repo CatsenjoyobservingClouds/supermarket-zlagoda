@@ -10,7 +10,8 @@ export default function CustomerCards() {
         <main>
             <DatabaseComponent
                 endpoint={endpoint}
-                handleData={() => {}}
+                decodeData={() => {}}
+                encodeData={() => {}}
                 columnNames={columnNames}
                 tableName={tableName} />
         </main>

@@ -2,11 +2,17 @@
     --button-border-color: hsl(198, 98%, 35%);
 }
 
-.btn-primary,
-.btn-danger {
-    padding: 1px 6px;
+
+.btn-primary {
     background-color: var(--button-bg-color);
     border-color: var(--button-bg-color);
+}
+.btn-danger {
+    background-color: rgb(215, 42, 77);
+}
+
+.btn-danger, .btn-primary {
+    padding: 1px 6px;
 }
 
 .centered-input-text input[type='text'] {
@@ -15,17 +21,18 @@
     text-align: center;
     font-size: 14px;
     font-weight: 500;
-
 }
 
 
 .centered-input-text td {
     position: relative;
+    width: fit-content;
   }
   .centered-input-text td input {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
+    width: fit-content;
   }
 
 .database-operations {
