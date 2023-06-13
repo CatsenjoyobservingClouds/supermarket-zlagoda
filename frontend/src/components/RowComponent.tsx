@@ -41,7 +41,7 @@ const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, 
           <Button variant="primary" onClick={(e) => onEdit(row.id, editedData)}>
             Update
           </Button>{' '}
-          <Button variant="danger" onClick={() => onDelete(rowData.id)}>
+          <Button variant="danger" onClick={(e) => onDelete(row.id)}>
             Delete
           </Button>
         </td>

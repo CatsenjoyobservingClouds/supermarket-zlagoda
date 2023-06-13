@@ -66,9 +66,11 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 return row;
             })
         );
+        filteredRows;
 
         console.log("patch");
-        axios.patch(endpoint + "/:" + id, encodeData(newData),
+        console.log(encodeData([newData])[0]);
+        axios.patch(endpoint + "/:" + id, encodeData([newData])[0],
         {
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem('jwt')
@@ -77,11 +79,14 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             .catch(error => {
                 console.log("Error fetching data:", error);
             })
+            fetchAllData();
+            console.log("fetched")
     };
 
     const handleDeleteRow = (id: number) => {
         console.log('Deleting... ' + id);
         setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+        filteredRows;
 
         console.log("delete");
         axios.delete(endpoint + "/:" + id, {
@@ -92,6 +97,8 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             .catch(error => {
                 console.log("Error fetching data:", error);
             })
+
+            fetchAllData();
     };
 
 
