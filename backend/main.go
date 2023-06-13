@@ -106,6 +106,32 @@ func initRouter() *gin.Engine {
 	{
 		cashierGroup.GET("/ping", controllers.Ping)
 
+		categoryGroup := cashierGroup.Group("/category")
+		{
+			categoryGroup.GET("/", categoryController.GetAllCategories)
+			categoryGroup.GET("/:category_number", categoryController.GetCategory)
+		}
+
+		customerCardGroup := cashierGroup.Group("/customerCard")
+		{
+			customerCardGroup.POST("/", customerCardController.CreateCustomerCard)
+			customerCardGroup.GET("/", customerCardController.GetAllCustomerCards)
+			customerCardGroup.GET("/:card_number", customerCardController.GetCustomerCard)
+			customerCardGroup.PATCH("/:card_number", customerCardController.UpdateCustomerCard)
+		}
+
+		productGroup := cashierGroup.Group("/product")
+		{
+			productGroup.GET("/", productController.GetAllProducts)
+			productGroup.GET("/:id_product", productController.GetProduct)
+		}
+
+		productInStoreGroup := cashierGroup.Group("/storeProduct")
+		{
+			productInStoreGroup.GET("/", productInStoreController.GetAllProductInStores)
+			productInStoreGroup.GET("/:UPC", productInStoreController.GetProductInStore)
+		}
+
 		receiptGroup := cashierGroup.Group("/check")
 		{
 			receiptGroup.POST("/", receiptController.CreateReceipt)
