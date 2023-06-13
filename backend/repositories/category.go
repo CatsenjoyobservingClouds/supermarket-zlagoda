@@ -59,12 +59,7 @@ func (repo *PostgresCategoryRepository) UpdateCategoryByNumber(category *models.
 }
 
 func (repo *PostgresCategoryRepository) DeleteCategoryByNumber(categoryNumber int) error {
-	deleteByNumberQuery := `DELETE FROM category WHERE category_number = $1;`
+	deleteByNumberQuery := `DELETE FROM category WHERE category_number = $1 RETURNING category_number`
 
-	_, err := db.Exec(deleteByNumberQuery, categoryNumber)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return db.QueryRow(deleteByNumberQuery, categoryNumber).Scan(&categoryNumber)
 }

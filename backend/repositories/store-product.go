@@ -85,10 +85,5 @@ func (repo *PostgresProductInStoreRepository) UpdateProductInStoreByUPC(UPC stri
 func (repo *PostgresProductInStoreRepository) DeleteProductInStoreByUPC(productInStoreUPC string) error {
 	deleteByUPCQuery := `DELETE FROM "store_product" WHERE upc = $1;`
 
-	_, err := db.Exec(deleteByUPCQuery, productInStoreUPC)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return db.QueryRow(deleteByUPCQuery, productInStoreUPC).Scan(&productInStoreUPC)
 }

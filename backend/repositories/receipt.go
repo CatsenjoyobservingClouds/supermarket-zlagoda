@@ -109,9 +109,7 @@ func (repo *PostgresReceiptRepository) GetReceiptByNumber(receiptNumber string) 
 }
 
 func (repo *PostgresReceiptRepository) DeleteReceiptByNumber(receiptNumber string) error {
-	deleteByNumberQuery := `DELETE FROM "check" WHERE check_number = $1;`
+	deleteByNumberQuery := `DELETE FROM "check" WHERE check_number = $1 RETURNING check_number;`
 
-	_, err := db.Exec(deleteByNumberQuery, receiptNumber)
-
-	return err
+	return db.QueryRow(deleteByNumberQuery, receiptNumber).Scan(&receiptNumber)
 }

@@ -74,12 +74,7 @@ func (repo *PostgresProductRepository) UpdateProductByID(product *models.Product
 }
 
 func (repo *PostgresProductRepository) DeleteProductByID(productID int) error {
-	deleteByIDQuery := `DELETE FROM "product" WHERE id_product = $1;`
+	deleteByIDQuery := `DELETE FROM "product" WHERE id_product = $1 RETURNING id_product;`
 
-	_, err := db.Exec(deleteByIDQuery, productID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return db.QueryRow(deleteByIDQuery, productID).Scan(&productID)
 }

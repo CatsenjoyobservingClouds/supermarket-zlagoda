@@ -13,7 +13,7 @@ type EmployeeRepository interface {
 	VerifyUsernameNotUsed(username string) error
 	CreateEmployee(employee *models.Employee) (*models.Employee, error)
 	GetEmployeeByUsername(username string) (*models.Employee, error)
-	GetAllEmployees() ([]models.Employee, error)
+	GetAllEmployees(orderBy string, ascDesc string) ([]models.Employee, error)
 	GetAllInfo(id string) (*models.Employee, error)
 	UpdateEmployeeById(employee *models.Employee) (*models.Employee, error)
 	DeleteEmployeeById(id string) error
@@ -106,7 +106,10 @@ func (controller *EmployeeController) LoginEmployee(context *gin.Context) {
 }
 
 func (controller *EmployeeController) GetAllEmployees(context *gin.Context) {
-	employees, err := controller.EmployeeRepository.GetAllEmployees()
+	orderBy := context.DefaultQuery("orderBy", "empl_surname")
+	ascDesc := context.DefaultQuery("ascDesc", "ASC")
+
+	employees, err := controller.EmployeeRepository.GetAllEmployees(orderBy, ascDesc)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		context.Abort()
