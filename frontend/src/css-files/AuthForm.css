@@ -9,6 +9,7 @@
 }
 
 .auth-container {
+    margin-top: 70px;
     background-image: url('../images/authform-background.jpg');
     background-size: 100% 100%;
     width: 100%;
@@ -17,12 +18,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 60px);
+    min-height: calc(100vh);
     /*Subtracting the height of the navigation bar */
     /* background-color: var(--bg-color); */
 }
 
 .auth-form {
+    margin-bottom: 60px;
     width: max(200px, 45%);
     padding: max(40px, 4%);
     border-radius: 0px;

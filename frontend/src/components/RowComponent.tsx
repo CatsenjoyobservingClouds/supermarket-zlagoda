@@ -40,7 +40,7 @@ const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, 
           />
         </td>
       ))}
-      <td className='unselectable'>
+      <td className='unselectable buttons-column'>
         {rowData["VAT"] == null &&
           <Button variant="primary" onClick={(e) => onEdit(row["Id"], editedData)} className='update-button'>
             Update

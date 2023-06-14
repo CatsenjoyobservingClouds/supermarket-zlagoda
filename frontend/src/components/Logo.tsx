@@ -6,8 +6,8 @@ export default function Logo() {
     return (
         <svg className='logo-svg unselectable'>
             <symbol id="s-text">
-                <text text-anchor="middle" x="50%" y="80%">ZL </text>
-                <text text-anchor="middle" x="52%" y="80%">ZL </text>
+                <text textAnchor="middle" x="50%" y="80%">ZL </text>
+                <text textAnchor="middle" x="52%" y="80%">ZL </text>
 
             </symbol>
 

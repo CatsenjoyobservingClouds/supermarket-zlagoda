@@ -2,11 +2,13 @@
 
 .logo-svg {
     display: block;
-    font: 2.5em 'Montserrat';
+    font: 2.4em 'Montserrat';
     width: 192px;
     height: 45px;
     margin: 0px;
     margin-right: auto;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
 }
 
 .text-copy {
@@ -16,6 +18,8 @@
     stroke-width: 1.5px;
     stroke-dashoffset: 0%;
     animation: stroke-offset 15s infinite linear;
+    padding-block: 0px;
+    margin-block: 0px;
 }
 
 .text-copy:nth-child(1){

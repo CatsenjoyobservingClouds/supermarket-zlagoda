@@ -1,6 +1,7 @@
 .max-width-full {
     max-width: 96%;
     margin: auto;
+    padding-block: 0px;
 }
 
 .navbar {
@@ -10,10 +11,20 @@
 .justify-content-end .navbar-text {
     color: black;
     font-weight: 500;
-    font-size: 17px;
+    font-size: 16px;
 
 }
 
 .nav-link {
+    margin-right: 25px;
     color: rgb(84, 80, 80);
+}
+
+@media (max-width: 1240px) {
+    .nav-link{
+        margin-right: 5px;
+    }
+    .navbar {
+        font-size: 15.5px;
+    }
 }

@@ -215,20 +215,20 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                     )}
                 </div>
                 <div className='table-wrapper'>
-                <Table bordered hover responsive="sm" className='custom-table'>
+                <Table striped hover responsive="sm" className='custom-table'>
                     <thead>
                         <tr>
                             {columnNames.map((columnName) => (
-                                <th key={columnName} className='unselectable with-padding' >
+                                <th key={columnName} className='unselectable' >
                                     {columnName}{' '}
                                     {sortedBy === columnName ? (
-                                        <BsFillCaretUpFill onClick={() => handleSort(columnName)} />
+                                        <BsFillCaretUpFill onClick={() => handleSort(columnName)}/>
                                     ) : (
                                         <BsFillCaretDownFill onClick={() => handleSort(columnName)} />
                                     )}
                                 </th>
                             ))}
-                            <th>Actions</th>
+                            <th className='buttons-column'>Actions</th>
                         </tr>
                     </thead>
                     <tbody>

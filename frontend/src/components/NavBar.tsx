@@ -5,7 +5,7 @@ import "../css-files/NavBar.css"
 
 export const NavBar = () => {
     return (
-        <Navbar expand="lg" bg="light" variant="light">
+        <Navbar fixed="top" expand="lg" bg="light" variant="light">
             <Container className='max-width-full'>
                 <Navbar.Brand href='/' className="justify-start">
                     <Logo />

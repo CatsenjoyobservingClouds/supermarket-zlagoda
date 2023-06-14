@@ -24,13 +24,13 @@
 
  .centered-input-text input[type='text'] {
      outline: none;
-     border: 0;
+     border: 0px;
      background-color: transparent;
      text-align: center;
      font-size: 14px;
      font-weight: 500;
      padding-block: 4px;
-     margin: 0;
+     margin: 0px;
  }
 
   /* .centered-input-text td {
