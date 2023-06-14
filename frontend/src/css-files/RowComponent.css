@@ -1,46 +1,63 @@
-:root {
-    --button-border-color: hsl(198, 98%, 35%);
-}
+ :root {
+     --button-border-color: hsl(198, 98%, 35%);
+ }
 
 
-.btn-primary {
-    background-color: var(--button-bg-color);
-    border-color: var(--button-bg-color);
-}
-.btn-danger {
-    background-color: rgb(215, 42, 77);
-}
+ .btn-primary {
+     background-color: var(--button-bg-color);
+     border-color: var(--button-bg-color);
+     margin-right: 1px;
+ }
 
-.btn-danger, .btn-primary {
-    padding: 1px 6px;
-}
+ .btn-danger {
+     background-color: rgb(215, 42, 77);
+ }
 
-.centered-input-text input[type='text'] {
-    border: 0;
-    background-color: transparent;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 500;
-}
+ .delete-button, .update-button{
+    margin-inline: 3px;
+     padding: 2px 6px
+ }
+
+ .delete-button {
+    margin-left: 0px;
+ }
+
+ .centered-input-text input[type='text'] {
+     outline: none;
+     border: 0;
+     background-color: transparent;
+     text-align: center;
+     font-size: 14px;
+     font-weight: 500;
+     padding-block: 4px;
+     margin: 0;
+ }
+
+  /* .centered-input-text td {
+     position: relative;
+     width: fit-content;
+     padding: 0;
+     margin: 0;
+     align-items: center;
+     justify-content: center;
+     text-align: center;
+ } */
+
+ /* .centered-input-text td input {
+     width: 100%;
+     height: 100%;
+     box-sizing: border-box;
+     width: fit-content;
+ }  */
 
 
-.centered-input-text td {
-    position: relative;
-    width: fit-content;
-  }
-  .centered-input-text td input {
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    width: fit-content;
-  }
 
-.database-operations {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
-}
+ .database-operations {
+     display: flex;
+     flex-wrap: wrap;
+     margin-bottom: 15px;
+ }
 
-.database-operations .btn {
-    margin-right: 5px;
-}
+ .database-operations .btn {
+     margin-right: 5px;
+ }

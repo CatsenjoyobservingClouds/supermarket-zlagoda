@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Container, Table, Button, InputGroup, FormControl, Modal, Form } from 'react-bootstrap';
+import { Container, Table, Button, InputGroup, FormControl, Modal, Form, Alert } from 'react-bootstrap';
 import { BsSearch, BsFillCaretUpFill, BsFillCaretDownFill } from 'react-icons/bs';
 import RowComponent, { RowData } from './RowComponent';
 import StarButton from './StarButton';
 import axios from 'axios';
+import { IIndexable } from '../App';
 import '../css-files/DatabaseComponent.css';
 
 
@@ -21,33 +22,69 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     const [sortedBy, setSortedBy] = useState<string>('');
     const [searchText, setSearchText] = useState('');
     const [showEditModal, setShowEditModal] = useState(false);
+    const [editedRow, setEditedRow] = useState<RowData>({} as RowData);
+    const [wrongNewData, setWrongNewData] = useState<boolean>(false);
+
+
+    const alertWrongNewData = wrongNewData === true && (
+        <Alert variant="danger">Entered wrong data</Alert>
+    );
 
     const handleEditModalShow = () => {
         setShowEditModal(true);
+        console.log(showEditModal);
     };
 
     const handleEditModalClose = () => {
+        setEditedRow({} as RowData);
         setShowEditModal(false);
     };
 
-    //   const handleSave = () => {
-    //     onEdit(rowData.id, editedData);
-    //     setShowEditModal(false);
-    //   };
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
+        setWrongNewData(false)
+        setEditedRow((prevData) => ({
+            ...prevData,
+            [key]: e.target.value,
+        }));
+    };
+
+    const handleSave = () => {
+        let encodedRow = {} as IIndexable;
+        try {
+            encodedRow = encodeData([editedRow])[0]
+        } catch {
+            setWrongNewData(true);
+            return;
+        }
+
+
+        axios.post(endpoint + "/", encodedRow, {
+            headers: {
+                "Authorization": "Bearer " + sessionStorage.getItem('jwt')
+            }
+        })
+            .then(resp => {
+                setEditedRow({} as RowData);
+                setShowEditModal(false);
+                setWrongNewData(false);
+                fetchAllData();
+            })
+            .catch(error => {
+                setWrongNewData(true);
+                console.log("Error adding new data:", error);
+            })
+    };
 
     const fetchAllData = () => {
         axios.get(endpoint + "/", {
             headers: {
-                "Authorization": "Bearer " + localStorage.getItem('jwt')
+                "Authorization": "Bearer " + sessionStorage.getItem('jwt')
             }
         })
             .then(response => {
                 const data = response.data;
                 setRows(decodeData(data));
-                console.log(rows);
-                // handleSort(sortedBy);
                 filteredRows;
-
             })
             .catch(error => {
                 console.log("Error fetching data:", error);
@@ -55,71 +92,86 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     };
 
 
-
-    const handleEditRow = (id: number, newData: RowData) => {
+    const handleEditRow = (id: string, newData: RowData) => {
         console.log('Editing... ' + id + newData);
-        setRows((prevRows) =>
-            prevRows.map((row) => {
-                if (row.id === id) {
-                    return { ...row, ...newData };
-                }
-                return row;
-            })
-        );
-        filteredRows;
+        let encodedRow = {} as IIndexable;
+        try {
+            encodedRow = encodeData([newData])[0]
+        } catch {
+            window.alert('Wrong date!');
+            return;
+        }
+
 
         console.log("patch");
-        console.log(encodeData([newData])[0]);
-        axios.patch(endpoint + "/:" + id, encodeData([newData])[0],
-        {
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem('jwt')
-            },
-        })
-            .catch(error => {
-                console.log("Error fetching data:", error);
+        console.log(encodedRow);
+        axios.patch(endpoint + "/" + id, encodedRow,
+            {
+                headers: {
+                    "Authorization": "Bearer " + sessionStorage.getItem('jwt')
+                },
             })
-            fetchAllData();
-            console.log("fetched")
+            .then(resp => {
+                setRows((prevRows) =>
+                    prevRows.map((row) => {
+                        if (row.Id === id) {
+                            return { ...row, ...newData };
+                        }
+                        return row;
+                    })
+                );
+            })
+            .catch(error => {
+                console.log("Error editing data:", error);
+                window.alert('Entered wrong data!');
+            })
+
+        console.log("fetched")
     };
 
-    const handleDeleteRow = (id: number) => {
+    const handleDeleteRow = (id: string) => {
         console.log('Deleting... ' + id);
-        setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-        filteredRows;
+
 
         console.log("delete");
-        axios.delete(endpoint + "/:" + id, {
+        axios.delete(endpoint + "/" + id, {
             headers: {
-                "Authorization": "Bearer " + localStorage.getItem('jwt')
+                "Authorization": "Bearer " + sessionStorage.getItem('jwt')
             }
         })
-            .catch(error => {
-                console.log("Error fetching data:", error);
+            .then(resp => {
+                setRows((prevRows) => prevRows.filter((row) => row["Id"] != id));
             })
-
-            fetchAllData();
+            .catch(error => {
+                console.log("Error deleting data:", error);
+            })
     };
 
 
-    const handleAddRow = () => {
-        const newRow: RowData = {
-            id: rows.length + 1,
-        };
-        columnNames.forEach((columnName) => {
-            newRow[columnName] = '';
-        });
-        setRows((prevRows) => [...prevRows, newRow]);
-    };
+    // const handleAddRow = () => {
+    //     const newRow: RowData = {
+    //         Id: rows.length + 1,
+    //     };
+    //     columnNames.forEach((columnName) => {
+    //         newRow[columnName] = '';
+    //     });
+    //     setRows((prevRows) => [...prevRows, newRow]);
+    // };
 
     const handleSort = (key: string) => {
         if (sortedBy === key) {
             // Reverse the sorting direction
             setRows((prevRows) => [...prevRows].reverse());
         } else {
-            setRows((prevRows) =>
-                [...prevRows].sort((a, b) => (a[key] > b[key] ? 1 : -1))
-            );
+            if ((key == "Id" && tableName == "Employee") || (key == "Card Number" && tableName == "Customer")) {
+                setRows((prevRows) =>
+                    [...prevRows].sort((a, b) => (parseInt(a[key].substring(5), 10) > parseInt(b[key].substring(5), 10) ? 1 : -1))
+                )
+            } else {
+                setRows((prevRows) =>
+                    [...prevRows].sort((a, b) => (parseInt(a[key]) > parseInt(b[key]) ? 1 : -1))
+                );
+            }
         }
         setSortedBy(key);
     };
@@ -147,12 +199,14 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             onChange={handleSearch}
                         />
                         <InputGroup.Text>
-                            <BsSearch onClick={() => handleSearch} />
+                            <BsSearch onClick={(e) => handleSearch} />
                         </InputGroup.Text>
                     </InputGroup>
-                    <Button variant="success" onClick={() => handleEditModalShow}>
-                        Add New {tableName}
-                    </Button>
+                    {(tableName != "Receipt" && localStorage.getItem("role")) != "Manager" ||
+                        <Button variant="success" onClick={(e) => handleEditModalShow()}>
+                            Add New {tableName}
+                        </Button>}
+
                     <Button variant="secondary">
                         Print Documents
                     </Button>
@@ -160,11 +214,12 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                         <StarButton />
                     )}
                 </div>
-                <Table striped bordered hover>
+                <div className='table-wrapper'>
+                <Table bordered hover responsive="sm" className='custom-table'>
                     <thead>
                         <tr>
                             {columnNames.map((columnName) => (
-                                <th key={columnName} className='unselectable' >
+                                <th key={columnName} className='unselectable with-padding' >
                                     {columnName}{' '}
                                     {sortedBy === columnName ? (
                                         <BsFillCaretUpFill onClick={() => handleSort(columnName)} />
@@ -179,7 +234,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                     <tbody>
                         {filteredRows.map((row) => (
                             <RowComponent
-                                key={row.id}
+                                key={row.Id}
                                 rowData={row}
                                 onDelete={handleDeleteRow}
                                 onEdit={handleEditRow}
@@ -188,34 +243,55 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                         ))}
                     </tbody>
                 </Table>
+                </div>
             </div>
 
-            {/* <Modal show={showEditModal} onHide={handleEditModalClose}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Edit Row</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        {columnNames.map((columnName) => (
-                            <Form.Group controlId={`form${columnName}`} key={columnName}>
-                                <Form.Label>{columnName}</Form.Label>
+            <Modal show={showEditModal} onHide={handleEditModalClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>New {tableName}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {tableName == "Employee" ? (
+                        <>
+                            <Form.Group controlId={`formusername`} key="username">
+                                <Form.Label>Username</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    value={editedData[columnName]}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, columnName)}
+                                    value={editedRow["username"]}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, "username")}
                                 />
                             </Form.Group>
-                        ))}
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={handleEditModalClose}>
-                            Close
-                        </Button>
-                        <Button variant="primary" onClick={handleSave}>
-                            Save Changes
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-                        </div >*/}
+                            <Form.Group controlId={`formpassword`} key="password">
+                                <Form.Label>Password</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={editedRow["password"]}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, "password")}
+                                />
+                            </Form.Group>
+                        </>)
+                        : null}
+                    {columnNames.filter((name) => name != "Id" && name != "Card Number").map((columnName) => (
+                        <Form.Group controlId={`form${columnName}`} key={columnName}>
+                            <Form.Label>{columnName}</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={editedRow[columnName]}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, columnName)}
+                            />
+                        </Form.Group>
+                    ))}
+                </Modal.Body>
+                {alertWrongNewData}
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleEditModalClose}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={handleSave}>
+                        Save Changes
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </>
 
     )

@@ -1,0 +1,19 @@
+.max-width-full {
+    max-width: 96%;
+    margin: auto;
+}
+
+.navbar {
+    font-size: 16.5px;
+}
+
+.justify-content-end .navbar-text {
+    color: black;
+    font-weight: 500;
+    font-size: 17px;
+
+}
+
+.nav-link {
+    color: rgb(84, 80, 80);
+}

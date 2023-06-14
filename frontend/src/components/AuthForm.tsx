@@ -32,7 +32,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
         console.log("Error while receiving JWT token.")
       });
 
-    console.log(localStorage.getItem('jwt'))
+    console.log(sessionStorage.getItem('jwt'))
   };
 
   const submittedWrongCredentials = areSubmittedWrongCredentials === true && (
@@ -44,7 +44,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
   }
 
   return (
-    <Container className="auth-container unselectable">
+    <div className="auth-container unselectable">
       <Form onSubmit={handleSubmit} className="auth-form">
         <h2>Welcome to Zlagoda</h2>
         <Form.Group controlId="formUsername" className="form-group">
@@ -69,7 +69,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
           Sign in
         </Button>
       </Form>
-    </Container>
+    </div>
   );
 };
 

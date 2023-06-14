@@ -1,22 +1,49 @@
-table {
+/* table {
     table-layout: fixed;
     width: 100%;
-  }
-  
-thead, tbody {
-    width: fit-content;
-}
+} */
+/* .table{
+} */
 
-th {
+/* .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+} */
+/* 
+thead, tbody {
+    margin: 0;
+    padding: 0;
+    width: fit-content;
+} */
+
+/* 
+*/
+ .database-container {
+    max-width: 96%;
+    margin-inline: auto;
+}
+/*
+table {
+    table-layout: auto;
+} */
+
+.custom-table > :not(caption) > * > * {
+    padding-inline: 0px;
+  }
+
+th,
+td {
     text-align: center;
     vertical-align: middle;
 }
-
-.database-container {
-    max-width: 92%;
-    margin: auto;
+.custom-table td{
+    white-space: nowrap;
 }
 
+
 thead {
-    background-color: rgba(0, 126, 194, 0.047);
-}   
+    font-size: 17px;
+    border: 1px;
+    border-color: rgba(3, 119, 182, 0.378);
+    background-color: rgba(9, 158, 238, 0.064);
+}

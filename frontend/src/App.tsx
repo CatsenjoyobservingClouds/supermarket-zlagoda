@@ -11,7 +11,7 @@ import Sales from './pages/Sales';
 import CustomerCards from './pages/CustomerCards';
 import StoreProducts from './pages/StoreProducts';
 import Categories from './pages/Categories';
-import Checks from './pages/Checks';
+import Checks from './pages/Receipts';
 import Home from './pages/Home';
 import jwt from 'jwt-decode';
 import { Navbar } from 'react-bootstrap';
@@ -27,7 +27,7 @@ interface RestrictedPages {
   categories: boolean;
   employees: boolean;
   products: boolean;
-  checks: boolean;
+  receipts: boolean;
   sales: boolean;
   customer_cards: boolean;
   products_in_the_store: boolean
@@ -46,7 +46,7 @@ const userRoles: UserRoles = {
     categories: true,
     employees: true,
     products: true,
-    checks: true,
+    receipts: true,
     sales: false,
     customer_cards: true,
     products_in_the_store: true,
@@ -55,7 +55,7 @@ const userRoles: UserRoles = {
     categories: false,
     employees: true,
     products: true,
-    checks: true,
+    receipts: true,
     sales: false,
     customer_cards: true,
     products_in_the_store: true,
@@ -64,21 +64,21 @@ const userRoles: UserRoles = {
 
 
 function App() {
-  const [userRole, setUserRole] = useState(localStorage.getItem("role") || null);
+  const [userRole, setUserRole] = useState(sessionStorage.getItem("role") || null);
 
   const handleLogout = () => {
     setUserRole(null);
-    localStorage.removeItem("role");
-    localStorage.removeItem("username");
-    localStorage.removeItem("jwt");
+    sessionStorage.removeItem("role");
+    sessionStorage.removeItem("username");
+    sessionStorage.removeItem("jwt");
   };
 
   const handleLogin = (jwt_token: string) => {
     const parsedJWT = jwt(jwt_token) as IIndexable
-    localStorage.setItem("username", parsedJWT["username" as keyof IIndexable])
-    localStorage.setItem("role", parsedJWT["role" as keyof IIndexable])
-    localStorage.setItem("jwt", jwt_token);
-    setUserRole(localStorage.getItem("role"));
+    sessionStorage.setItem("username", parsedJWT["username" as keyof IIndexable])
+    sessionStorage.setItem("role", parsedJWT["role" as keyof IIndexable])
+    sessionStorage.setItem("jwt", jwt_token);
+    setUserRole(sessionStorage.getItem("role"));
   }
 
   const hasAccess = (path: string) => {
@@ -87,7 +87,7 @@ function App() {
       return false;
     }
     console.log("done");
-    const resource = path.replace(/^\//, '').replace("-", "_");
+    const resource = path.replace(/^\//, '').replaceAll("-", "_");
     return userRoles[userRole as keyof UserRoles][resource as keyof RestrictedPages] || false;
   };
 
@@ -107,7 +107,7 @@ function App() {
           <Route path='/login' element={<Login onLogin={handleLogin} />} />
           <Route path='/employees' element={hasAccess("/employees") ? <Employees /> : <Navigate to="/" />} />
           <Route path='/products' element={hasAccess("/products") ? <Products /> : <Navigate to="/" />} />
-          <Route path='/checks' element={hasAccess("/checks") ? <Checks /> : <Navigate to="/" />} />
+          <Route path='/receipts' element={hasAccess("/receipts") ? <Checks /> : <Navigate to="/" />} />
           {/* <Route path='/sales' element={hasAccess("/sales") ? <Sales /> : <Navigate to="/" />} /> */}
           <Route path='/customer-cards' element={hasAccess("/customer-cards") ? <CustomerCards /> : <Navigate to="/" />} />
           <Route path='/categories' element={hasAccess("/categories") ? <Categories /> : <Navigate to="/" />} />
@@ -165,7 +165,7 @@ function App() {
 //     element: user ? <Menu onLogout={handleLogout} /> :
 //       <Login onLogin={(role) => {
 //         setUser(role);
-//         localStorage.setItem("userRole", role);
+//         sessionStorage.setItem("userRole", role);
 //       }} />,
 //     children: [
 //       {

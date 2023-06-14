@@ -3,15 +3,32 @@ import DatabaseComponent from '../components/DatabaseComponent';
 
 export default function Categories() {
     const rowData = {};
-    const columnNames = ['№', 'Name', 'Average Product Price'];
+    const columnNames = ['Id', 'Name'];
     const tableName= "Category";
-    const endpoint = "";
+    const endpoint = "http://localhost:8080/manager/category";
+
+    const decodeData = (data: any[]) => {
+        const chosenData = data.map((item) => ({
+            'Id': item.category_number,
+            'Name': item.category_name
+        }));
+        return chosenData;
+    }
+
+    const encodeData = (data: any[]) => {
+        const chosenData = data.map((item) => ({
+            "category_number": item["Id"],
+            "category_name": item["Name"]
+        }));
+        return chosenData;
+    }
+    
     return (
         <main>
             <DatabaseComponent
                 endpoint={endpoint}
-                decodeData={() => {}}
-                encodeData={() => {}}
+                decodeData={decodeData}
+                encodeData={encodeData}
                 columnNames={columnNames}
                 tableName={tableName} />
         </main>

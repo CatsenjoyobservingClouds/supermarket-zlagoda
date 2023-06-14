@@ -1,12 +1,14 @@
 import { Container, Navbar, Nav } from 'react-bootstrap';
+import Logo from './Logo';
 import React from 'react';
+import "../css-files/NavBar.css"
 
 export const NavBar = () => {
     return (
-        <Navbar expand="md" bg="light" variant="light">
-            <Container>
-                <Navbar.Brand href='/'>
-                    <h4>ZLAGODA</h4>
+        <Navbar expand="lg" bg="light" variant="light">
+            <Container className='max-width-full'>
+                <Navbar.Brand href='/' className="justify-start">
+                    <Logo />
                 </Navbar.Brand>
 
                 {localStorage.getItem("role") ?
@@ -14,13 +16,13 @@ export const NavBar = () => {
                         localStorage.getItem("role") == "Manager" ? (
                             <>
                                 <Navbar.Collapse id="basic-navbar-nav">
-                                    <Nav className="me-auto">
+                                    <Nav className="m-auto">
                                         <Nav.Link href='/employees'>Employees</Nav.Link>
                                         <Nav.Link href='/customer-cards'>Customer Cards</Nav.Link>
                                         <Nav.Link href='/categories'>Categories</Nav.Link>
                                         <Nav.Link href='/products'>Products</Nav.Link>
                                         <Nav.Link href='/products-in-the-store'>Products in the Store</Nav.Link>
-                                        <Nav.Link href='/checks'>Checks</Nav.Link>
+                                        <Nav.Link href='/receipts'>Receipts</Nav.Link>
                                     </Nav>
                                 </Navbar.Collapse>
 
@@ -36,12 +38,12 @@ export const NavBar = () => {
                             (
                                 <>
                                     <Navbar.Collapse id="basic-navbar-nav">
-                                        <Nav className="me-auto">
+                                        <Nav className="m-auto">
                                             <Nav.Link href='/employees'>Employees</Nav.Link>
                                             <Nav.Link href='/customer-cards'>Customer Cards</Nav.Link>
                                             <Nav.Link href='/products'>Products</Nav.Link>                                        <Nav.Link href='/products-in-the-store'>Products in the Store</Nav.Link>
                                             <Nav.Link href='/products-in-the-store'>Products in the Store</Nav.Link>
-                                            <Nav.Link href='/checks'>Checks</Nav.Link>
+                                            <Nav.Link href='/receipts'>Receipts</Nav.Link>
                                         </Nav>
                                     </Navbar.Collapse>
 
