@@ -27,8 +27,11 @@ func (controller *ProductInStoreController) CreateProductInStore(context *gin.Co
 		return
 	}
 
-	if productInStore.UPCProm.Valid {
-		productInStore.IsPromotional = true
+	if err := productInStore.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
 	}
 
 	newProductInStore, err := controller.ProductInStoreRepository.CreateProductInStore(&productInStore)
@@ -82,8 +85,11 @@ func (controller *ProductInStoreController) UpdateProductInStore(context *gin.Co
 		return
 	}
 
-	if productInStore.UPCProm.Valid {
-		productInStore.IsPromotional = true
+	if err := productInStore.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
 	}
 
 	updatedProductInStore, err := controller.ProductInStoreRepository.UpdateProductInStoreByUPC(UPC, &productInStore)

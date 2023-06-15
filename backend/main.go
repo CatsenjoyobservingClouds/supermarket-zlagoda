@@ -1,8 +1,8 @@
 package main
 
 import (
-	"Zlahoda_AIS/auth"
 	"Zlahoda_AIS/controllers"
+	"Zlahoda_AIS/middleware"
 	"Zlahoda_AIS/repositories"
 	"github.com/gin-gonic/gin"
 )
@@ -39,12 +39,12 @@ func main() {
 
 func initRouter() *gin.Engine {
 	router := gin.Default()
-	router.Use(controllers.CORSMiddleware())
+	router.Use(middleware.CORS())
 
 	router.POST("/login", employeeController.LoginEmployee)
 
 	managerGroup := router.Group("/manager")
-	managerGroup.Use(auth.ManagerAuth())
+	managerGroup.Use(middleware.ManagerAuth())
 	{
 		employeeGroup := managerGroup.Group("/employee")
 		{
@@ -102,7 +102,7 @@ func initRouter() *gin.Engine {
 	}
 
 	cashierGroup := router.Group("/cashier")
-	cashierGroup.Use(auth.CashierAuth())
+	cashierGroup.Use(middleware.CashierAuth())
 	{
 		cashierGroup.GET("/ping", controllers.Ping)
 

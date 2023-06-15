@@ -20,6 +20,7 @@ func (repo *PostgresReceiptRepository) CreateReceipt(employeeUsername string, re
 	}
 
 	getProductSellingPriceQuery := `SELECT selling_price FROM "store_product" WHERE upc = '%v'`
+	decrementProductInStoreAmountQuery := `UPDATE "store_product" SET products_number = products_number - $1 WHERE upc = $2`
 	createReceiptProductQuery := `INSERT INTO "sale" (upc, check_number, product_number, selling_price) VALUES ($1, $2, $3, $4)`
 
 	for i, product := range receipt.Products {
@@ -28,7 +29,19 @@ func (repo *PostgresReceiptRepository) CreateReceipt(employeeUsername string, re
 			return nil, err
 		}
 
-		db.MustExec(createReceiptProductQuery, product.UPC, receipt.ReceiptNumber, product.Amount, product.SellingPrice)
+		transaction := db.MustBegin()
+
+		_, err = transaction.Exec(decrementProductInStoreAmountQuery, product.Amount, product.UPC)
+		if err != nil {
+			return nil, err
+		}
+
+		transaction.MustExec(createReceiptProductQuery, product.UPC, receipt.ReceiptNumber, product.Amount, product.SellingPrice)
+
+		err = transaction.Commit()
+		if err != nil {
+			return nil, fmt.Errorf("failed to commit transaction: %w", err)
+		}
 	}
 
 	getEmployeeFullNameQuery := `SELECT empl_surname, empl_name, empl_patronymic FROM "employee" WHERE id_employee = $1`

@@ -29,6 +29,13 @@ func (controller *ProductController) CreateProduct(context *gin.Context) {
 		return
 	}
 
+	if err := product.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
+
 	newProduct, err := controller.ProductRepository.CreateProduct(&product)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -81,6 +88,13 @@ func (controller *ProductController) UpdateProduct(context *gin.Context) {
 	}
 
 	product.ID = productID
+
+	if err := product.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
 
 	updatedProduct, err := controller.ProductRepository.UpdateProductByID(&product)
 	if err != nil {

@@ -33,6 +33,13 @@ func (controller *CategoryController) CreateCategory(context *gin.Context) {
 		return
 	}
 
+	if err := category.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
+
 	newCategory, err := controller.CategoryRepository.CreateCategory(&category)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -85,6 +92,13 @@ func (controller *CategoryController) UpdateCategory(context *gin.Context) {
 	}
 
 	category.CategoryNumber = categoryNumber
+
+	if err := category.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
 
 	updatedCategory, err := controller.CategoryRepository.UpdateCategoryByNumber(&category)
 	if err != nil {

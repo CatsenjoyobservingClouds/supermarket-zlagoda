@@ -10,6 +10,10 @@ type ReceiptProduct struct {
 }
 
 func (receiptProduct ReceiptProduct) VerifyCorrectness() error {
+	if receiptProduct.UPC == "" {
+		return errors.New("upc cannot be empty")
+	}
+
 	if receiptProduct.Amount < 0 || receiptProduct.SellingPrice < 0 {
 		return errors.New("number parameters cannot be negative")
 	}

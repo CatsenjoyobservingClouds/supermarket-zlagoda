@@ -68,7 +68,7 @@ func (repo *PostgresEmployeeRepository) GetAllEmployees(orderBy string, ascDesc 
 	return employees, nil
 }
 
-func (repo *PostgresEmployeeRepository) GetAllInfo(id string) (*models.Employee, error) {
+func (repo *PostgresEmployeeRepository) GetEmployeeById(id string) (*models.Employee, error) {
 	getEmployeeByIdQuery := `SELECT * FROM employee WHERE id_employee = $1;`
 
 	var employee models.Employee

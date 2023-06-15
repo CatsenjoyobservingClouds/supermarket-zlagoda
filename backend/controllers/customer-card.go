@@ -28,6 +28,13 @@ func (controller *CustomerCardController) CreateCustomerCard(context *gin.Contex
 		return
 	}
 
+	if err := customerCard.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
+
 	newCustomerCard, err := controller.CustomerCardRepository.CreateCustomerCard(&customerCard)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -54,7 +61,7 @@ func (controller *CustomerCardController) GetCustomerCard(context *gin.Context) 
 }
 
 func (controller *CustomerCardController) GetAllCustomerCards(context *gin.Context) {
-	orderBy := context.DefaultQuery("orderBy", "card_number")
+	orderBy := context.DefaultQuery("orderBy", "cust_surname")
 	ascDesc := context.DefaultQuery("ascDesc", "ASC")
 
 	categories, err := controller.CustomerCardRepository.GetAllCustomerCards(orderBy, ascDesc)
@@ -80,6 +87,13 @@ func (controller *CustomerCardController) UpdateCustomerCard(context *gin.Contex
 	}
 
 	customerCard.CardNumber = customerCardNumber
+
+	if err := customerCard.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
 
 	updatedCustomerCard, err := controller.CustomerCardRepository.UpdateCustomerCardByNumber(&customerCard)
 	if err != nil {

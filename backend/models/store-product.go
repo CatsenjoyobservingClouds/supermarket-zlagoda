@@ -15,6 +15,10 @@ type ProductInStore struct {
 }
 
 func (productInStore ProductInStore) VerifyCorrectness() error {
+	if productInStore.UPC == "" {
+		return errors.New("upc cannot be empty")
+	}
+
 	if productInStore.SellingPrice < 0 || productInStore.ProductsNumber < 0 {
 		return errors.New("values cannot be less than 0")
 	}

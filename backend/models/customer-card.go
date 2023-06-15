@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"strings"
 )
 
 type CustomerCard struct {
@@ -17,7 +18,18 @@ type CustomerCard struct {
 	DiscountPercent int            `json:"percent" db:"percent"`
 }
 
-func (card *CustomerCard) Verify() error {
+func (card *CustomerCard) VerifyCorrectness() error {
+	stringParameters := []string{card.CardNumber, card.LastName, card.FirstName, card.PhoneNumber}
+	for _, stringParameter := range stringParameters {
+		if stringParameter == "" {
+			return errors.New("cannot have empty strings")
+		}
+	}
+
+	if !strings.HasPrefix(card.PhoneNumber, "+") {
+		return errors.New("phone number must start with a '+'")
+	}
+
 	if card.DiscountPercent < 0 {
 		return errors.New("discount cannot be less than 0")
 	}

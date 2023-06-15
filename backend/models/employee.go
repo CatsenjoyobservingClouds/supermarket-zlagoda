@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"golang.org/x/crypto/bcrypt"
+	"strings"
 	"time"
 )
 
@@ -46,8 +47,31 @@ func (employee *Employee) CheckPassword(providedPassword string) error {
 }
 
 func (employee *Employee) VerifyCorrectness() error {
+	stringParameters := []string{employee.FirstName, employee.LastName, employee.PhoneNumber, employee.City, employee.Street, employee.ZipCode, employee.Username, employee.Password}
+	for _, stringParameter := range stringParameters {
+		if stringParameter == "" {
+			return errors.New("cannot have empty strings")
+		}
+	}
+
+	if employee.Role != Manager && employee.Role != Cashier {
+		return errors.New("incorrect employee role")
+	}
+
 	if !employee.BirthDate.Before(time.Now().AddDate(-18, 0, 0)) {
 		return errors.New("employee too young")
+	}
+
+	if !employee.StartDate.Before(time.Now()) {
+		return errors.New("cannot add an employee who hasn't yet started working")
+	}
+
+	if employee.StartDate.IsZero() {
+		employee.StartDate = time.Now()
+	}
+
+	if !strings.HasPrefix(employee.PhoneNumber, "+") {
+		return errors.New("phone number must start with a '+'")
 	}
 
 	if employee.Salary < 0 {

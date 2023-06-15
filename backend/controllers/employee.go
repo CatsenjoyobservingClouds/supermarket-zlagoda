@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"Zlahoda_AIS/auth"
+	"Zlahoda_AIS/middleware"
 	"Zlahoda_AIS/models"
 )
 
@@ -14,7 +14,7 @@ type EmployeeRepository interface {
 	CreateEmployee(employee *models.Employee) (*models.Employee, error)
 	GetEmployeeByUsername(username string) (*models.Employee, error)
 	GetAllEmployees(orderBy string, ascDesc string) ([]models.Employee, error)
-	GetAllInfo(id string) (*models.Employee, error)
+	GetEmployeeById(id string) (*models.Employee, error)
 	UpdateEmployeeById(employee *models.Employee) (*models.Employee, error)
 	DeleteEmployeeById(id string) error
 }
@@ -38,14 +38,14 @@ func (controller *EmployeeController) RegisterEmployee(context *gin.Context) {
 	}
 
 	if err := employee.VerifyCorrectness(); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		context.Abort()
 
 		return
 	}
 
 	if err := controller.EmployeeRepository.VerifyUsernameNotUsed(employee.Username); err != nil {
-		context.JSON(http.StatusConflict, gin.H{"error": err})
+		context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		context.Abort()
 
 		return
@@ -94,7 +94,7 @@ func (controller *EmployeeController) LoginEmployee(context *gin.Context) {
 		return
 	}
 
-	tokenString, err := auth.GenerateJWT(employee.Username, employee.Role)
+	tokenString, err := middleware.GenerateJWT(employee.Username, employee.Role)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		context.Abort()
@@ -123,7 +123,7 @@ func (controller *EmployeeController) GetAllEmployees(context *gin.Context) {
 func (controller *EmployeeController) GetEmployeeById(context *gin.Context) {
 	id := context.Param("id_employee")
 
-	employee, err := controller.EmployeeRepository.GetAllInfo(id)
+	employee, err := controller.EmployeeRepository.GetEmployeeById(id)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		context.Abort()
@@ -147,6 +147,13 @@ func (controller *EmployeeController) UpdateEmployee(context *gin.Context) {
 
 	employee.ID = id
 
+	if err := employee.VerifyCorrectness(); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
+
 	updatedEmployee, err := controller.EmployeeRepository.UpdateEmployeeById(&employee)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -161,8 +168,23 @@ func (controller *EmployeeController) UpdateEmployee(context *gin.Context) {
 func (controller *EmployeeController) DeleteEmployee(context *gin.Context) {
 	id := context.Param("id_employee")
 
-	err := controller.EmployeeRepository.DeleteEmployeeById(id)
+	employeeToDelete, err := controller.EmployeeRepository.GetEmployeeById(id)
 	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
+
+	employeeExecutingQueryUsername := context.MustGet("username").(string)
+	if employeeToDelete.Username == employeeExecutingQueryUsername {
+		context.JSON(http.StatusForbidden, gin.H{"error": "cannot delete oneself"})
+		context.Abort()
+
+		return
+	}
+
+	if err = controller.EmployeeRepository.DeleteEmployeeById(id); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		context.Abort()
 

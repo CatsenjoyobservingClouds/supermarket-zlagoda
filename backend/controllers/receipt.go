@@ -39,7 +39,7 @@ func (controller *ReceiptController) CreateReceipt(context *gin.Context) {
 
 	newReceipt, err := models.NewReceipt(cardNumber, products)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		context.Abort()
 
 		return
@@ -47,7 +47,7 @@ func (controller *ReceiptController) CreateReceipt(context *gin.Context) {
 
 	newReceipt, err = controller.ReceiptRepository.CreateReceipt(employeeUsername, newReceipt)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		context.Abort()
 
 		return
@@ -68,7 +68,7 @@ func (controller *ReceiptController) GetAllReceipts(context *gin.Context) {
 		return
 	}
 
-	productsOrderBy := context.DefaultQuery("productsOrderBy", "UPC")
+	productsOrderBy := context.DefaultQuery("productsOrderBy", "product_name")
 	productsAscDesc := context.DefaultQuery("productsAscDesc", "ASC")
 
 	for i, receipt := range receipts {

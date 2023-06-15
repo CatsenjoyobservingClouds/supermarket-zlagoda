@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"Zlahoda_AIS/models"
+	"database/sql"
 	"fmt"
 )
 
@@ -9,6 +10,10 @@ type PostgresProductInStoreRepository struct {
 }
 
 func (repo *PostgresProductInStoreRepository) CreateProductInStore(productInStore *models.ProductInStore) (*models.ProductInStore, error) {
+	if err := repo.setUPCPromIfNeeded(productInStore); err != nil {
+		return nil, err
+	}
+
 	createProductInStoreQuery :=
 		`INSERT INTO "store_product" (upc, upc_prom, id_product, selling_price, products_number, promotional_product) 
 		VALUES ($1, $2, $3, $4, $5, $6) 
@@ -60,6 +65,10 @@ func (repo *PostgresProductInStoreRepository) GetProductInStoreByUPC(productInSt
 }
 
 func (repo *PostgresProductInStoreRepository) UpdateProductInStoreByUPC(UPC string, productInStore *models.ProductInStore) (*models.ProductInStore, error) {
+	if err := repo.setUPCPromIfNeeded(productInStore); err != nil {
+		return nil, err
+	}
+
 	updateByUPCQuery :=
 		`UPDATE "store_product" 
 		SET upc = $1,
@@ -83,7 +92,25 @@ func (repo *PostgresProductInStoreRepository) UpdateProductInStoreByUPC(UPC stri
 }
 
 func (repo *PostgresProductInStoreRepository) DeleteProductInStoreByUPC(productInStoreUPC string) error {
-	deleteByUPCQuery := `DELETE FROM "store_product" WHERE upc = $1;`
+	deleteByUPCQuery := `DELETE FROM "store_product" WHERE upc = $1 RETURNING upc`
 
 	return db.QueryRow(deleteByUPCQuery, productInStoreUPC).Scan(&productInStoreUPC)
+}
+
+func (repo *PostgresProductInStoreRepository) setUPCPromIfNeeded(productInStore *models.ProductInStore) error {
+	if !productInStore.IsPromotional || productInStore.UPCProm.Valid {
+		return nil
+	}
+
+	getProductUPCByIDQuery := `SELECT upc FROM "store_product" WHERE id_product = $1 AND upc_prom IS NULL`
+
+	var UPC string
+	err := db.Get(&UPC, getProductUPCByIDQuery, productInStore.ID)
+	if err != nil {
+		return err
+	}
+
+	productInStore.UPCProm = sql.NullString{String: UPC, Valid: true}
+
+	return nil
 }

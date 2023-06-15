@@ -84,18 +84,18 @@
 
 /* Media Queries for Responsiveness */
 /* @media (max-width: 576px) {
-    .auth-form {
+    .middleware-form {
         width: 90%;
         padding: 30px;
     }
 }
 
 @media (max-width: 768px) {
-    .auth-container {
+    .middleware-container {
         min-height: calc(100vh - 80px);
     }
 
-    .auth-form {
+    .middleware-form {
         width: 80%;
         padding: 40px;
     }
