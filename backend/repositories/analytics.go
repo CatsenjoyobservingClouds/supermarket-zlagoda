@@ -80,7 +80,7 @@ func (repo *PostgresAnalyticsRepository) GetMostSoldProductsPerCashier() ([]mode
 			FROM employee_product_sales
 			GROUP BY id_employee
 		) 
-		SELECT *
+		SELECT eps.id_employee, empl_surname, id_product, product_name, max_sales AS units_sold
 		FROM employee_product_sales eps
 			INNER JOIN max_sales_per_employee mspe
 			    ON eps.id_employee = mspe.id_employee
@@ -95,13 +95,13 @@ func (repo *PostgresAnalyticsRepository) GetMostSoldProductsPerCashier() ([]mode
 func (repo *PostgresAnalyticsRepository) GetRegisteredCustomersWhoHaveBeenServedByEveryCashier() ([]models.CustomerCard, error) {
 	query :=
 		`SELECT card_number, cust_surname, cust_name, cust_patronymic
-		FROM Customer_Card
+		FROM customer_card
 		WHERE NOT EXISTS (SELECT *
-		                  FROM Employee
+		                  FROM employee
 		                  WHERE empl_role = 'Касир' AND NOT EXISTS (SELECT *
-		                                                            FROM Check
-		                                                            WHERE Check.card_number = Customer_Card.card_number 
-		                                                              AND Check.id_employee = Employee.id_employee
+		                                                            FROM "check"
+		                                                            WHERE "check".card_number = customer_card.card_number 
+		                                                              AND "check".id_employee = employee.id_employee
 		                                                            )
 		                  );`
 
@@ -113,14 +113,14 @@ func (repo *PostgresAnalyticsRepository) GetRegisteredCustomersWhoHaveBeenServed
 
 func (repo *PostgresAnalyticsRepository) GetCashiersWhoHaveSoldEveryProductInTheStore() ([]models.Employee, error) {
 	query :=
-		`SELECT Employee.id_employee, empl_surname
-		FROM Employee
+		`SELECT employee.id_employee, empl_surname
+		FROM employee
 		WHERE NOT EXISTS (SELECT UPC
-		                 FROM Store_Product
+		                 FROM store_product
 		                 WHERE UPC NOT IN (SELECT UPC
-		                                  FROM Sale LEFT JOIN Check
-		                                      		ON Sale.check_number = Check.check_number
-		                                  WHERE Check.id_employee = Employee.id_employee
+		                                  FROM sale LEFT JOIN "check"
+		                                      		ON sale.check_number = "check".check_number
+		                                  WHERE "check".id_employee = employee.id_employee
 		                                  )
 		                );`
 

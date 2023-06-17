@@ -24,12 +24,9 @@ type CategoryAveragePrices struct {
 }
 
 type CashierMostSoldProducts struct {
-	CashierID       string         `json:"id_employee" db:"id_employee"`
-	LastName        string         `json:"empl_surname" db:"empl_surname"`
-	FirstName       sql.NullString `json:"empl_name" db:"empl_name"`
-	MiddleName      string         `json:"empl_patronymic,omitempty" db:"empl_patronymic"`
-	ProductID       int            `json:"id_product,omitempty" db:"id_product"`
-	ProductName     string         `json:"product_name" db:"product_name"`
-	UnitsSold       int            `json:"units_sold" db:"units_sold"`
-	TotalSalesPrice float64        `json:"total_sales_price" db:"total_sales_price"`
+	CashierID   string `json:"id_employee" db:"id_employee"`
+	LastName    string `json:"empl_surname" db:"empl_surname"`
+	ProductID   int    `json:"id_product,omitempty" db:"id_product"`
+	ProductName string `json:"product_name" db:"product_name"`
+	UnitsSold   int    `json:"units_sold" db:"units_sold"`
 }

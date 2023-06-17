@@ -107,7 +107,7 @@ func getStartAndEndDates(context *gin.Context) (time.Time, time.Time) {
 
 	endDate, err := time.Parse("02-01-2006", endDateString)
 	if err != nil {
-		endDate = time.Time{}
+		endDate = time.Now()
 	}
 
 	return startDate, endDate
