@@ -16,6 +16,7 @@ type EmployeeRepository interface {
 	GetAllEmployees(orderBy string, ascDesc string) ([]models.Employee, error)
 	GetEmployeeById(id string) (*models.Employee, error)
 	UpdateEmployeeById(employee *models.Employee) (*models.Employee, error)
+	UpdateEmployeeCredentialsById(employee *models.Employee) error
 	DeleteEmployeeById(id string) error
 }
 
@@ -51,7 +52,7 @@ func (controller *EmployeeController) RegisterEmployee(context *gin.Context) {
 		return
 	}
 
-	if err := employee.HashPassword(employee.Password); err != nil {
+	if err := employee.HashAndSavePassword(employee.Password); err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		context.Abort()
 

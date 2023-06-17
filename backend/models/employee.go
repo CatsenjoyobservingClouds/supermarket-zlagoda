@@ -26,7 +26,7 @@ type Employee struct {
 	IsPasswordDefault bool           `json:"is_password_default" db:"is_password_default"`
 }
 
-func (employee *Employee) HashPassword(password string) error {
+func (employee *Employee) HashAndSavePassword(password string) error {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
 		return err
