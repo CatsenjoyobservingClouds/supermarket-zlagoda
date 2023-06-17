@@ -14,6 +14,7 @@ var productController *controllers.ProductController
 var productInStoreController *controllers.ProductInStoreController
 var receiptController *controllers.ReceiptController
 var selfController *controllers.SelfController
+var analyticsController *controllers.AnalyticsController
 
 func main() {
 	repositories.InitializeDB()
@@ -24,6 +25,7 @@ func main() {
 	productRepository := &repositories.PostgresProductRepository{}
 	productInStoreRepository := &repositories.PostgresProductInStoreRepository{}
 	receiptRepository := &repositories.PostgresReceiptRepository{}
+	analyticsRepository := &repositories.PostgresAnalyticsRepository{}
 
 	employeeController = &controllers.EmployeeController{EmployeeRepository: employeeRepository}
 	categoryController = &controllers.CategoryController{CategoryRepository: categoryRepository}
@@ -32,6 +34,7 @@ func main() {
 	productInStoreController = &controllers.ProductInStoreController{ProductInStoreRepository: productInStoreRepository}
 	receiptController = &controllers.ReceiptController{ReceiptRepository: receiptRepository}
 	selfController = &controllers.SelfController{EmployeeRepository: employeeRepository}
+	analyticsController = &controllers.AnalyticsController{AnalyticsRepository: analyticsRepository}
 
 	router := initRouter()
 	router.Run(":8080")
@@ -98,6 +101,16 @@ func initRouter() *gin.Engine {
 			receiptGroup.GET("/", receiptController.GetAllReceipts)
 			receiptGroup.GET("/:check_number", receiptController.GetReceipt)
 			receiptGroup.DELETE("/:check_number", receiptController.DeleteReceipt)
+		}
+
+		analyticsGroup := managerGroup.Group("/analytics")
+		{
+			analyticsGroup.GET("/salesPerCashier", analyticsController.GetSalesPerCashier)
+			analyticsGroup.GET("/salesPerProduct", analyticsController.GetSalesPerProduct)
+			analyticsGroup.GET("/averagePricePerCategory", analyticsController.GetAveragePricePerCategory)
+			analyticsGroup.GET("/mostSoldProductsPerCashier", analyticsController.GetMostSoldProductsPerCashier)
+			analyticsGroup.GET("/registeredCustomersWhoHaveBeenServedByEveryCashier", analyticsController.GetRegisteredCustomersWhoHaveBeenServedByEveryCashier)
+			analyticsGroup.GET("/cashiersWhoHaveSoldEveryProductInTheStore", analyticsController.GetCashiersWhoHaveSoldEveryProductInTheStore)
 		}
 
 		managerGroup.GET("/ping", controllers.Ping)
