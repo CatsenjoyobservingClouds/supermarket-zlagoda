@@ -49,7 +49,7 @@ func (repo *PostgresEmployeeRepository) GetEmployeeByUsername(username string) (
 	var employee models.Employee
 	err := db.Get(&employee, getEmployeeByUsernameQuery, username)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("employee with this username doesn't exist")
 	}
 
 	return &employee, nil
@@ -105,6 +105,17 @@ func (repo *PostgresEmployeeRepository) UpdateEmployeeById(employee *models.Empl
 	}
 
 	return employee, nil
+}
+
+func (repo *PostgresEmployeeRepository) UpdateEmployeeCredentialsById(employee *models.Employee) error {
+	updateEmployeeByIdQuery :=
+		`UPDATE employee SET
+		username = $1,
+		password = $2
+		WHERE id_employee = $3
+		RETURNING *;`
+
+	return db.QueryRowx(updateEmployeeByIdQuery, employee.Username, employee.Password, employee.ID).StructScan(employee)
 }
 
 func (repo *PostgresEmployeeRepository) DeleteEmployeeById(id string) error {

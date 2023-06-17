@@ -13,6 +13,7 @@ var customerCardController *controllers.CustomerCardController
 var productController *controllers.ProductController
 var productInStoreController *controllers.ProductInStoreController
 var receiptController *controllers.ReceiptController
+var selfController *controllers.SelfController
 
 func main() {
 	repositories.InitializeDB()
@@ -30,6 +31,7 @@ func main() {
 	productController = &controllers.ProductController{ProductRepository: productRepository}
 	productInStoreController = &controllers.ProductInStoreController{ProductInStoreRepository: productInStoreRepository}
 	receiptController = &controllers.ReceiptController{ReceiptRepository: receiptRepository}
+	selfController = &controllers.SelfController{EmployeeRepository: employeeRepository}
 
 	router := initRouter()
 	router.Run(":8080")
@@ -138,6 +140,14 @@ func initRouter() *gin.Engine {
 			receiptGroup.GET("/", receiptController.GetAllReceipts)
 			receiptGroup.GET("/:check_number", receiptController.GetReceipt)
 		}
+	}
+
+	selfGroup := router.Group("/self")
+	selfGroup.Use(middleware.EmployeeAuth())
+	{
+		selfGroup.GET("/", selfController.GetAllInfoAboutOneself)
+		selfGroup.PATCH("/", selfController.UpdateInfoAboutOneself)
+		selfGroup.PATCH("/credentials", selfController.UpdateCredentials)
 	}
 
 	return router
