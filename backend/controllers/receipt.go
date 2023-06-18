@@ -67,21 +67,21 @@ func (controller *ReceiptController) GetAllReceipts(context *gin.Context) {
 
 		return
 	}
-
-	productsOrderBy := context.DefaultQuery("productsOrderBy", "product_name")
-	productsAscDesc := context.DefaultQuery("productsAscDesc", "ASC")
-
-	for i, receipt := range receipts {
-		receiptProducts, err := controller.ReceiptRepository.GetAllProductsInReceipt(receipt.ReceiptNumber, productsOrderBy, productsAscDesc)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			context.Abort()
-
-			return
-		}
-
-		receipts[i].Products = receiptProducts
-	}
+	//
+	//productsOrderBy := context.DefaultQuery("productsOrderBy", "product_name")
+	//productsAscDesc := context.DefaultQuery("productsAscDesc", "ASC")
+	//
+	//for i, receipt := range receipts {
+	//	receiptProducts, err := controller.ReceiptRepository.GetAllProductsInReceipt(receipt.ReceiptNumber, productsOrderBy, productsAscDesc)
+	//	if err != nil {
+	//		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	//		context.Abort()
+	//
+	//		return
+	//	}
+	//
+	//	receipts[i].Products = receiptProducts
+	//}
 
 	context.JSON(http.StatusOK, receipts)
 }
