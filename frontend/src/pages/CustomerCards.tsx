@@ -2,7 +2,7 @@ import React from 'react';
 import DatabaseComponent from '../components/DatabaseComponent';
 
 export default function CustomerCards() {
-    const columnNames = ['Card Number', 'Surname', 'Name', 'Patronymic', 'Phone Number', 'City', 'Street', 'Zip Code', 'Discount Percent'];
+    const columnNames = ['Card Number', 'Full Name', 'Phone Number', 'City', 'Street', 'Zip Code', 'Discount Percent'];
     const tableName= "Customer";
     const endpoint = "http://localhost:8080/manager/customerCard";
 
@@ -10,14 +10,12 @@ export default function CustomerCards() {
         const chosenData = data.map((item) => ({
             "Id": item.card_number,
             'Card Number': item.card_number,
-            'Surname': item.cust_surname,
-            'Name': item.cust_name,
-            'Patronymic': item.cust_patronymic["String"],
+            'Full Name': item.cust_surname + " " + item.cust_name + " " + item.cust_patronymic["String"],
             'Phone Number': item.phone_number,
             'City': item.city["String"],
             'Street': item.street["String"],
             'Zip Code': item.zip_code["String"],
-            'Discount Percent': item.percent
+            'Discount Percent': item.percent + "%"
         }));
         return chosenData;
     }

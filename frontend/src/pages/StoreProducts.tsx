@@ -11,8 +11,8 @@ export default function StoreProducts() {
             "Id": item.UPC,
             'UPC': item.UPC,
             'UPC Promotional': item.UPC_prom["String"],
-            'Product': item.id_product,
-            'Selling Price': item.selling_price,
+            'Product': item.product_name,
+            'Selling Price': item.selling_price + " UAH",
             'Amount': item.products_number
         }));
         return chosenData;

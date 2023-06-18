@@ -10,8 +10,8 @@ export default function Products() {
     const decodeData = (data: any[]) => {
         const chosenData = data.map((item) => ({
             'Id': item.id_product,
-            'Category': item.category_number,
             'Name': item.product_name,
+            'Category': item.category_name,
             'Characteristics': item.characteristics
         }));
         return chosenData;

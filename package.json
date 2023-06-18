@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@types/jspdf": "^2.0.0",
+    "jspdf": "^2.5.1",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "jspdf-autotable": "^3.5.29"
+  }
+}

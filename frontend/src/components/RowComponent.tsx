@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Button } from 'react-bootstrap';
 import '../css-files/RowComponent.css';
+import { ReceiptButton } from '../components/Buttons';
+
 
 interface RowComponentProps {
   rowData: RowData;
   onDelete: (id: string) => void;
   onEdit: (id: string, newData: RowData) => void;
   columnNames: string[];
+  handleReceiptClick?: Function
 }
 
 export interface RowData {
@@ -14,7 +17,7 @@ export interface RowData {
   [key: string]: any;
 }
 
-const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, columnNames }) => {
+const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, columnNames, handleReceiptClick }) => {
   const [row, setRow] = useState<RowData>(rowData);
   const [editedData, setEditedData] = useState<RowData>({ ...rowData });
 
@@ -40,7 +43,11 @@ const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, 
           />
         </td>
       ))}
+      
       <td className='unselectable buttons-column'>
+        {rowData["VAT"] != null &&
+        <ReceiptButton handleReceiptClick={handleReceiptClick} />
+        }
         {rowData["VAT"] == null &&
           <Button variant="primary" onClick={(e) => onEdit(row["Id"], editedData)} className='update-button'>
             Update
