@@ -76,6 +76,9 @@ func (controller *AnalyticsController) GetAveragePricePerCategory(context *gin.C
 }
 
 func (controller *AnalyticsController) GetCategorySalesPerCashier(context *gin.Context) {
+	// get the query parameter "category_number" and
+	// if it's not present or cannot be converted
+	// to an integer, return a response with a status code of 400
 	categoryNumber, err := strconv.Atoi(context.Query("category_number"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -84,15 +87,16 @@ func (controller *AnalyticsController) GetCategorySalesPerCashier(context *gin.C
 		return
 	}
 
+	// pass the request on to the repository
 	mostSoldProducts, err := controller.AnalyticsRepository.GetCategorySalesPerCashier(categoryNumber)
-	if err != nil {
+
+	// generate the HTTP response based on whether any error
+	// has occurred during the query execution
+	if err == nil {
+		context.JSON(http.StatusOK, mostSoldProducts)
+	} else {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		context.Abort()
-
-		return
 	}
-
-	context.JSON(http.StatusOK, mostSoldProducts)
 }
 
 func (controller *AnalyticsController) GetRegisteredCustomersWhoHaveBeenServedByEveryCashier(context *gin.Context) {

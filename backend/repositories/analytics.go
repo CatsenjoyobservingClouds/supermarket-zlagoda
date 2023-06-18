@@ -71,6 +71,7 @@ func (repo *PostgresAnalyticsRepository) GetAveragePricePerCategory(decimalPlace
 }
 
 func (repo *PostgresAnalyticsRepository) GetCategorySalesPerCashier(categoryNumber int) ([]models.CashierCategorySales, error) {
+	// initialize the query
 	query :=
 		`SELECT e.id_employee, empl_surname, coalesce(sum(product_number), 0) as units_sold
 		FROM employee e
@@ -82,10 +83,12 @@ func (repo *PostgresAnalyticsRepository) GetCategorySalesPerCashier(categoryNumb
 		GROUP BY e.id_employee, empl_surname
 		ORDER BY units_sold DESC`
 
-	var averagePrices []models.CashierCategorySales
-	err := db.Select(&averagePrices, query, categoryNumber)
+	// execute the query, and save the results
+	// into the cashierCategorySales variable
+	var cashierCategorySales []models.CashierCategorySales
+	err := db.Select(&cashierCategorySales, query, categoryNumber)
 
-	return averagePrices, err
+	return cashierCategorySales, err
 }
 
 func (repo *PostgresAnalyticsRepository) GetRegisteredCustomersWhoHaveBeenServedByEveryCashier() ([]models.CustomerCard, error) {
