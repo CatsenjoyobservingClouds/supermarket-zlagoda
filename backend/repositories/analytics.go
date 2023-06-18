@@ -50,6 +50,7 @@ func (repo *PostgresAnalyticsRepository) GetSalesPerProduct(startDate, endDate t
 }
 
 func (repo *PostgresAnalyticsRepository) GetAveragePricePerCategory(decimalPlaces int, orderBy, ascDesc string) ([]models.CategoryAveragePrices, error) {
+	// initialize the query
 	query :=
 		`SELECT category.category_number, category_name, coalesce(round(avg(selling_price), $1), 0) AS average_price
 		FROM category 
@@ -57,8 +58,12 @@ func (repo *PostgresAnalyticsRepository) GetAveragePricePerCategory(decimalPlace
 		    LEFT JOIN store_product ON product.id_product = store_product.id_product
 		WHERE NOT promotional_product OR product.id_product IS NULL
 		GROUP BY category.category_number, category_name`
+
+	// format the query with sorting parameters
 	queryOrdered := fmt.Sprintf("%s ORDER BY %s %s", query, orderBy, ascDesc)
 
+	// execute the query, and save the results
+	// into the averagePrices variable
 	var averagePrices []models.CategoryAveragePrices
 	err := db.Select(&averagePrices, queryOrdered, decimalPlaces)
 

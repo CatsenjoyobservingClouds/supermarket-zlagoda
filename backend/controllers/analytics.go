@@ -50,22 +50,29 @@ func (controller *AnalyticsController) GetSalesPerProduct(context *gin.Context) 
 }
 
 func (controller *AnalyticsController) GetAveragePricePerCategory(context *gin.Context) {
+	// get the query parameter "decimalPlaces" and
+	// if it's not present or cannot be converted
+	// to an integer, use the default value of 2
 	decimalPlaces, err := strconv.Atoi(context.Query("decimalPlaces"))
 	if err != nil {
 		decimalPlaces = 2
 	}
+
+	// get the sorting parameters and
+	// use default values if they're not present
 	orderBy := context.DefaultQuery("orderBy", "average_price")
 	ascDesc := context.DefaultQuery("ascDesc", "ASC")
 
+	// pass the parameters on to repository to execute the query
 	averagePrices, err := controller.AnalyticsRepository.GetAveragePricePerCategory(decimalPlaces, orderBy, ascDesc)
-	if err != nil {
+
+	// generate the HTTP response based on whether any error
+	// has occurred during the query execution
+	if err == nil {
+		context.JSON(http.StatusOK, averagePrices)
+	} else {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		context.Abort()
-
-		return
 	}
-
-	context.JSON(http.StatusOK, averagePrices)
 }
 
 func (controller *AnalyticsController) GetCategorySalesPerCashier(context *gin.Context) {
