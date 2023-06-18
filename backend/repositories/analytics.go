@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"time"
 
 	"Zlahoda_AIS/models"
@@ -11,7 +12,7 @@ type PostgresAnalyticsRepository struct {
 
 func (repo *PostgresAnalyticsRepository) GetSalesPerCashier(startDate, endDate time.Time) ([]models.CashierSales, error) {
 	query :=
-		`SELECT employee.id_employee, empl_surname, 
+		`SELECT employee.id_employee, empl_surname,
     		CASE
     		    WHEN count(sum_total) = 0 THEN 0
     		    ELSE sum(sum_total)
@@ -48,48 +49,38 @@ func (repo *PostgresAnalyticsRepository) GetSalesPerProduct(startDate, endDate t
 	return sales, err
 }
 
-func (repo *PostgresAnalyticsRepository) GetAveragePricePerCategory() ([]models.CategoryAveragePrices, error) {
+func (repo *PostgresAnalyticsRepository) GetAveragePricePerCategory(orderBy, ascDesc string) ([]models.CategoryAveragePrices, error) {
 	query :=
-		`SELECT Category.category_number, category_name, Round(AVG(selling_price), 2) AS average_price
-		FROM (Category INNER JOIN Product ON Category.category_number = Product.category_number)
-		    INNER JOIN Store_Product ON Product.id_product = Store_Product.id_product
-		WHERE NOT promotional_product
-		GROUP BY Category.category_number, category_name
-		ORDER BY AVG(selling_price) DESC`
+		`SELECT category.category_number, category_name, coalesce(round(avg(selling_price), 2), 0) AS average_price
+		FROM category 
+		    LEFT JOIN product ON category.category_number = product.category_number
+		    LEFT JOIN store_product ON product.id_product = store_product.id_product
+		WHERE NOT promotional_product OR product.id_product IS NULL
+		GROUP BY category.category_number, category_name`
+	queryOrdered := fmt.Sprintf("%s ORDER BY %s %s", query, orderBy, ascDesc)
 
 	var averagePrices []models.CategoryAveragePrices
-	err := db.Select(&averagePrices, query)
+	err := db.Select(&averagePrices, queryOrdered)
 
 	return averagePrices, err
 }
 
-func (repo *PostgresAnalyticsRepository) GetMostSoldProductsPerCashier() ([]models.CashierMostSoldProducts, error) {
+func (repo *PostgresAnalyticsRepository) GetCategorySalesPerCashier(categoryNumber int) ([]models.CashierCategorySales, error) {
 	query :=
-		`WITH employee_product_sales AS (
-			SELECT e.id_employee, empl_surname, p.id_product, product_name, sum(s.product_number) AS units_sold
-			FROM employee e
-			    LEFT JOIN "check" c on e.id_employee = c.id_employee
-			    LEFT JOIN sale s on c.check_number = s.check_number
-			    LEFT JOIN store_product sp on sp.upc = s.upc
-			    LEFT JOIN product p on p.id_product = sp.id_product
-			WHERE empl_role = 'Cashier'
-			GROUP BY e.id_employee, empl_surname, p.id_product, product_name
-			ORDER BY sum(s.product_number)
-		), max_sales_per_employee AS (
-		    SELECT id_employee, max(units_sold) AS max_sales
-			FROM employee_product_sales
-			GROUP BY id_employee
-		) 
-		SELECT eps.id_employee, empl_surname, id_product, product_name, max_sales AS units_sold
-		FROM employee_product_sales eps
-			INNER JOIN max_sales_per_employee mspe
-			    ON eps.id_employee = mspe.id_employee
-			    AND eps.units_sold = mspe.max_sales`
+		`SELECT e.id_employee, empl_surname, coalesce(sum(product_number), 0) as units_sold
+		FROM employee e
+			LEFT JOIN "check" c on e.id_employee = c.id_employee
+			LEFT JOIN sale s on c.check_number = s.check_number
+			LEFT JOIN store_product sp on sp.upc = s.upc
+			LEFT JOIN product p on p.id_product = sp.id_product
+		WHERE category_number = $1 OR category_number IS NULL
+		GROUP BY e.id_employee, empl_surname
+		ORDER BY units_sold DESC`
 
-	var mostSoldProducts []models.CashierMostSoldProducts
-	err := db.Select(&mostSoldProducts, query)
+	var averagePrices []models.CashierCategorySales
+	err := db.Select(&averagePrices, query, categoryNumber)
 
-	return mostSoldProducts, err
+	return averagePrices, err
 }
 
 func (repo *PostgresAnalyticsRepository) GetRegisteredCustomersWhoHaveBeenServedByEveryCashier() ([]models.CustomerCard, error) {

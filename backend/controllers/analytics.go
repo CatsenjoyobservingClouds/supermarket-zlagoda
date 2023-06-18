@@ -4,14 +4,15 @@ import (
 	"Zlahoda_AIS/models"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type AnalyticsRepository interface {
 	GetSalesPerCashier(startDate, endDate time.Time) ([]models.CashierSales, error)
 	GetSalesPerProduct(startDate, endDate time.Time) ([]models.ProductSales, error)
-	GetAveragePricePerCategory() ([]models.CategoryAveragePrices, error)
-	GetMostSoldProductsPerCashier() ([]models.CashierMostSoldProducts, error)
+	GetAveragePricePerCategory(orderBy, ascDesc string) ([]models.CategoryAveragePrices, error)
+	GetCategorySalesPerCashier(categoryNumber int) ([]models.CashierCategorySales, error)
 	GetRegisteredCustomersWhoHaveBeenServedByEveryCashier() ([]models.CustomerCard, error)
 	GetCashiersWhoHaveSoldEveryProductInTheStore() ([]models.Employee, error)
 }
@@ -49,9 +50,12 @@ func (controller *AnalyticsController) GetSalesPerProduct(context *gin.Context) 
 }
 
 func (controller *AnalyticsController) GetAveragePricePerCategory(context *gin.Context) {
-	averagePrices, err := controller.AnalyticsRepository.GetAveragePricePerCategory()
+	orderBy := context.DefaultQuery("orderBy", "average_price")
+	ascDesc := context.DefaultQuery("ascDesc", "ASC")
+
+	averagePrices, err := controller.AnalyticsRepository.GetAveragePricePerCategory(orderBy, ascDesc)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		context.Abort()
 
 		return
@@ -60,10 +64,18 @@ func (controller *AnalyticsController) GetAveragePricePerCategory(context *gin.C
 	context.JSON(http.StatusOK, averagePrices)
 }
 
-func (controller *AnalyticsController) GetMostSoldProductsPerCashier(context *gin.Context) {
-	mostSoldProducts, err := controller.AnalyticsRepository.GetMostSoldProductsPerCashier()
+func (controller *AnalyticsController) GetCategorySalesPerCashier(context *gin.Context) {
+	categoryNumber, err := strconv.Atoi(context.Query("category_number"))
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
+
+	mostSoldProducts, err := controller.AnalyticsRepository.GetCategorySalesPerCashier(categoryNumber)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		context.Abort()
 
 		return

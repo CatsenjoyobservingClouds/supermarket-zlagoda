@@ -108,7 +108,7 @@ func initRouter() *gin.Engine {
 			analyticsGroup.GET("/salesPerCashier", analyticsController.GetSalesPerCashier)
 			analyticsGroup.GET("/salesPerProduct", analyticsController.GetSalesPerProduct)
 			analyticsGroup.GET("/averagePricePerCategory", analyticsController.GetAveragePricePerCategory)
-			analyticsGroup.GET("/mostSoldProductsPerCashier", analyticsController.GetMostSoldProductsPerCashier)
+			analyticsGroup.GET("/categorySalesPerCashier", analyticsController.GetCategorySalesPerCashier)
 			analyticsGroup.GET("/registeredCustomersWhoHaveBeenServedByEveryCashier", analyticsController.GetRegisteredCustomersWhoHaveBeenServedByEveryCashier)
 			analyticsGroup.GET("/cashiersWhoHaveSoldEveryProductInTheStore", analyticsController.GetCashiersWhoHaveSoldEveryProductInTheStore)
 		}
