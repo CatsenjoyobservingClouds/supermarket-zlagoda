@@ -11,7 +11,7 @@ import (
 type AnalyticsRepository interface {
 	GetSalesPerCashier(startDate, endDate time.Time) ([]models.CashierSales, error)
 	GetSalesPerProduct(startDate, endDate time.Time) ([]models.ProductSales, error)
-	GetAveragePricePerCategory(orderBy, ascDesc string) ([]models.CategoryAveragePrices, error)
+	GetAveragePricePerCategory(decimalPlaces int, orderBy, ascDesc string) ([]models.CategoryAveragePrices, error)
 	GetCategorySalesPerCashier(categoryNumber int) ([]models.CashierCategorySales, error)
 	GetRegisteredCustomersWhoHaveBeenServedByEveryCashier() ([]models.CustomerCard, error)
 	GetCashiersWhoHaveSoldEveryProductInTheStore() ([]models.Employee, error)
@@ -50,10 +50,14 @@ func (controller *AnalyticsController) GetSalesPerProduct(context *gin.Context) 
 }
 
 func (controller *AnalyticsController) GetAveragePricePerCategory(context *gin.Context) {
+	decimalPlaces, err := strconv.Atoi(context.Query("decimalPlaces"))
+	if err != nil {
+		decimalPlaces = 2
+	}
 	orderBy := context.DefaultQuery("orderBy", "average_price")
 	ascDesc := context.DefaultQuery("ascDesc", "ASC")
 
-	averagePrices, err := controller.AnalyticsRepository.GetAveragePricePerCategory(orderBy, ascDesc)
+	averagePrices, err := controller.AnalyticsRepository.GetAveragePricePerCategory(decimalPlaces, orderBy, ascDesc)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		context.Abort()
