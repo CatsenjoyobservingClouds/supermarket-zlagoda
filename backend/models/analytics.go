@@ -23,10 +23,8 @@ type CategoryAveragePrices struct {
 	AveragePrice   float64 `json:"average_price" db:"average_price"`
 }
 
-type CashierMostSoldProducts struct {
-	CashierID   string `json:"id_employee" db:"id_employee"`
-	LastName    string `json:"empl_surname" db:"empl_surname"`
-	ProductID   int    `json:"id_product,omitempty" db:"id_product"`
-	ProductName string `json:"product_name" db:"product_name"`
-	UnitsSold   int    `json:"units_sold" db:"units_sold"`
+type CashierCategorySales struct {
+	CashierID string `json:"id_employee" db:"id_employee"`
+	LastName  string `json:"empl_surname" db:"empl_surname"`
+	UnitsSold int    `json:"units_sold" db:"units_sold"`
 }
