@@ -46,7 +46,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
   return (
     <div className="auth-container unselectable">
       <Form onSubmit={handleSubmit} className="auth-form">
-        <h2>Welcome to Zlagoda</h2>
+        <h2>Welcome to Zlahoda</h2>
         <Form.Group controlId="formUsername" className="form-group">
           <Form.Label>Username</Form.Label>
           <Form.Control

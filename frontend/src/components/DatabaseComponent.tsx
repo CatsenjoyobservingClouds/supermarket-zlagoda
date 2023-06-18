@@ -6,6 +6,8 @@ import StarButton from './StarButton';
 import axios from 'axios';
 import { IIndexable } from '../App';
 import '../css-files/DatabaseComponent.css';
+import autoTable from "jspdf-autotable";
+import jsPDF from 'jspdf';
 
 
 
@@ -188,6 +190,39 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             })
     );
 
+    const generatePdf = () => {
+        const unit = "pt";
+        const size = "A4";
+        const orientation = "portrait";
+        const marginLeft = 40;
+        const doc = new jsPDF(orientation, unit, size);
+
+        doc.setFontSize(15);
+        doc.setFont("bold");
+        doc.text("Checks Report", marginLeft, 40);
+
+        // let tableData = [];
+        // checks.forEach(check => {
+        //     let data = [
+        //         check.check_number,
+        //         check.id_employee,
+        //         check.card_number,
+        //         check.sum_total,
+        //         check.vat
+        //     ];
+        //     tableData.push(data);
+        // });
+
+        autoTable(doc, {
+            startY: 60,
+            head: [columnNames],
+            body: rows,
+            theme: 'grid'
+        });
+
+        doc.save("checks.pdf");
+    };
+
     if (rows.length != 0) return (
         <>
             <div className='database-container'>
@@ -198,51 +233,52 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             value={searchText}
                             onChange={handleSearch}
                         />
-                        <InputGroup.Text>
-                            <BsSearch onClick={(e) => handleSearch} />
-                        </InputGroup.Text>
-                    </InputGroup>
-                    {(tableName != "Receipt" && localStorage.getItem("role")) != "Manager" ||
-                        <Button variant="success" onClick={(e) => handleEditModalShow()}>
-                            Add New {tableName}
-                        </Button>}
+                        <Button variant="info" size="lg" className="d-flex align-items-center" id='search-button'
+                            onClick={(e) => handleSearch}>
+                            <BsSearch />
+                        </Button>
+                        {(tableName != "Receipt" && localStorage.getItem("role")) != "Manager" ||
+                            <Button variant="success" onClick={(e) => handleEditModalShow()}>
+                                Add New {tableName}
+                            </Button>}
 
-                    <Button variant="secondary">
-                        Print Documents
-                    </Button>
-                    {tableName === "Customer Card" && (
-                        <StarButton />
-                    )}
+                        <Button variant="secondary" onClick={(e) => generatePdf()}>
+                            Print Documents
+                        </Button>
+                        {tableName === "Customer Card" && (
+                            <StarButton />
+                        )}
+                    </InputGroup>
                 </div>
                 <div className='table-wrapper'>
-                <Table striped hover responsive="sm" className='custom-table'>
-                    <thead>
-                        <tr>
-                            {columnNames.map((columnName) => (
-                                <th key={columnName} className='unselectable' >
-                                    {columnName}{' '}
-                                    {sortedBy === columnName ? (
-                                        <BsFillCaretUpFill onClick={() => handleSort(columnName)}/>
-                                    ) : (
-                                        <BsFillCaretDownFill onClick={() => handleSort(columnName)} />
-                                    )}
-                                </th>
+                    <Table striped hover responsive="sm" className='custom-table'>
+                        <thead>
+                            <tr>
+                                {columnNames.map((columnName) => (
+                                    <th key={columnName} className='unselectable' >
+                                        {columnName}{' '}
+                                        {sortedBy === columnName ? (
+                                            <BsFillCaretUpFill onClick={() => handleSort(columnName)} />
+                                        ) : (
+                                            <BsFillCaretDownFill onClick={() => handleSort(columnName)} />
+                                        )}
+                                    </th>
+                                ))}
+                                <th className='buttons-column'>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredRows.map((row) => (
+                                <RowComponent
+                                    key={row.Id}
+                                    rowData={row}
+                                    onDelete={handleDeleteRow}
+                                    onEdit={handleEditRow}
+                                    columnNames={columnNames}
+                                />
                             ))}
-                            <th className='buttons-column'>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredRows.map((row) => (
-                            <RowComponent
-                                key={row.Id}
-                                rowData={row}
-                                onDelete={handleDeleteRow}
-                                onEdit={handleEditRow}
-                                columnNames={columnNames}
-                            />
-                        ))}
-                    </tbody>
-                </Table>
+                        </tbody>
+                    </Table>
                 </div>
             </div>
 
@@ -253,14 +289,6 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 <Modal.Body>
                     {tableName == "Employee" ? (
                         <>
-                            <Form.Group controlId={`formusername`} key="username">
-                                <Form.Label>Username</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={editedRow["username"]}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, "username")}
-                                />
-                            </Form.Group>
                             <Form.Group controlId={`formpassword`} key="password">
                                 <Form.Label>Password</Form.Label>
                                 <Form.Control

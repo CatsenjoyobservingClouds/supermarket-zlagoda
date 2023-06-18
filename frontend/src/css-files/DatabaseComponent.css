@@ -106,4 +106,12 @@ Table thead{
     margin: 0 0 0 0;
 }
 
+#search-button {
+    background-color: #cfe5f7;
+}
+
+#search-button:hover {
+    background-color: #60b7ff;
+}
+
 
