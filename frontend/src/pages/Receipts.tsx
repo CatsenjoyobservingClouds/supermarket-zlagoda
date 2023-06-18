@@ -13,18 +13,18 @@ import '../css-files/DatabaseComponent.css';
 const Receipts = () => {
     const columnNames = ['Receipt', 'Employee', 'Customer', 'Card Number', 'Print Date', 'Total Sum', 'VAT'];
     const tableName = "Receipt";
-    const endpoint = "http://localhost:8080/manager/check";
+    const endpoint = "http://localhost:8080/" + sessionStorage.getItem("role")?.toLowerCase() +"/check";
 
     const decodeData = (data: any) => {
         const chosenData = data.map((item: any) => ({
             'Id': item.check_number,
             'Receipt': item.check_number,
-            'Employee': item.empl_surname + " " + item.empl_name[0] +  ". " + (item.empl_patronymic["Valid"] ? (item.empl_patronymic["String"][0] &&  ["String"] + ".") : ""),
-            'Customer': item.cust_surname["String"] + " " + item.cust_name["String"][0] +  ". " +(item.cust_patronymic["Valid"] ? (item.cust_patronymic["String"][0] && ["String"] + ".") : ""),
+            'Employee': item.empl_surname + " " + item.empl_name[0] +  ". " + (item.empl_patronymic["Valid"] ? (item.empl_patronymic["String"][0] + ".") : ""),
+            'Customer': item.cust_surname["String"] + " " + item.cust_name["String"][0] +  ". " +(item.cust_patronymic["Valid"] ? (item.cust_patronymic["String"][0] + ".") : ""),
             'Card Number': item.card_number["String"],
             'Print Date': new Date(item.print_date).toLocaleString(),
             'Total Sum': item.sum_total + " UAH",
-            'VAT': item.vat
+            'VAT': item.vat + " UAH"
         }));
         return chosenData;
     }
@@ -118,7 +118,7 @@ const Receipts = () => {
                 const data = response.data;
                 console.log(data);
                 setRows(decodeData(data));
-                filteredRows;
+                // filteredRows;
             })
             .catch(error => {
                 console.log("Error fetching data:", error);

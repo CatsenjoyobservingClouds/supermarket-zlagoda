@@ -86,7 +86,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             .then(response => {
                 const data = response.data;
                 setRows(decodeData(data));
-                filteredRows;
+                // filteredRows();
             })
             .catch(error => {
                 console.log("Error fetching data:", error);
