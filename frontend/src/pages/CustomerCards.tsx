@@ -3,6 +3,8 @@ import DatabaseComponent from '../components/DatabaseComponent';
 
 export default function CustomerCards() {
     const columnNames = ['Card Number', 'Full Name', 'Phone Number', 'City', 'Street', 'Zip Code', 'Discount Percent'];
+    const columnNamesChange = ['Name', 'Surname', 'Patronymic', 'Phone Number', 'City', 'Street', 'Zip Code', 'Discount Percent'];
+
     const tableName= "Customer";
     const endpoint = "http://localhost:8080/manager/customerCard";
 
@@ -11,6 +13,9 @@ export default function CustomerCards() {
             "Id": item.card_number,
             'Card Number': item.card_number,
             'Full Name': item.cust_surname + " " + item.cust_name + " " + item.cust_patronymic["String"],
+            'Name': item.cust_name,
+            'Surname': item.cust_surname,
+            'Patronymic': item.cust_patronymic["String"],
             'Phone Number': item.phone_number,
             'City': item.city["String"],
             'Street': item.street["String"],
@@ -22,7 +27,7 @@ export default function CustomerCards() {
 
     const encodeData = (data: any[]) => {
         const chosenData = data.map((item) => ({
-            'card_number': item["Card Number"],
+            'card_number': item["Id"],
             'cust_surname': item["Surname"],
             'cust_name': item["Name"],
             'cust_patronymic': {
@@ -54,6 +59,7 @@ export default function CustomerCards() {
                 decodeData={decodeData}
                 encodeData={encodeData}
                 columnNames={columnNames}
+                columnNamesChange={columnNamesChange}
                 tableName={tableName} />
         </main>
     )

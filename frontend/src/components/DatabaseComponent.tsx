@@ -9,6 +9,7 @@ import '../css-files/DatabaseComponent.css';
 import autoTable from "jspdf-autotable";
 import jsPDF from 'jspdf';
 import Report from '../pages/Report';
+import DatePickerInput from './DatePicker';
 
 
 
@@ -17,16 +18,19 @@ interface DatabaseComponentProps {
     decodeData: Function,
     encodeData: Function,
     columnNames: string[]; // Array of column names
+    columnNamesChange: string[];
     tableName: string;
 }
 
-const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeData, encodeData, columnNames, tableName }) => {
+const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeData, encodeData, columnNames, columnNamesChange, tableName }) => {
     const [rows, setRows] = useState<RowData[]>([]);
     const [sortedBy, setSortedBy] = useState<string>('');
     const [searchText, setSearchText] = useState('');
     const [showEditModal, setShowEditModal] = useState(false);
+    const [editMode, setEditMode] = useState(false);
     const [editedRow, setEditedRow] = useState<RowData>({} as RowData);
     const [wrongNewData, setWrongNewData] = useState<boolean>(false);
+    const [temporarySearch, setTemporarySearch] = useState('');
 
 
     const alertWrongNewData = wrongNewData === true && (
@@ -35,6 +39,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
 
     const handleEditModalShow = () => {
         setShowEditModal(true);
+        setEditMode(false);
         console.log(showEditModal);
     };
 
@@ -51,10 +56,19 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         }));
     };
 
+    const handleDateChange = (date: Date, key: string) => {
+        setWrongNewData(false)
+        setEditedRow((prevData) => ({
+            ...prevData,
+            [key]: date?.toLocaleDateString(),
+        }));
+    };
+
     const handleSave = () => {
         let encodedRow = {} as IIndexable;
         try {
             encodedRow = encodeData([editedRow])[0]
+            encodedRow = Object.fromEntries(Object.entries(encodedRow).filter(([_, v]) => v!= null && v!=""))
         } catch {
             setWrongNewData(true);
             return;
@@ -73,10 +87,40 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 fetchAllData();
             })
             .catch(error => {
+                console.log(encodedRow)
                 setWrongNewData(true);
                 console.log("Error adding new data:", error);
             })
     };
+
+    const handleUpdate = () => {
+        let encodedRow = {} as IIndexable;
+        try {
+            encodedRow = encodeData([editedRow])[0]
+        } catch {
+            window.alert('Wrong date!');
+            return;
+        }
+
+        axios.patch(endpoint + "/" + editedRow["Id"], encodedRow,
+            {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem('jwt')
+                },
+            })
+            .then(resp => {
+                setEditedRow({} as RowData);
+                setShowEditModal(false);
+                setWrongNewData(false);
+                setRows(rows.filter((row) => (row["Id"] != editedRow["Id"])))
+                fetchAllData();
+            })
+            .catch(error => {
+                console.log(encodedRow)
+                setWrongNewData(true);
+                console.log("Error editing data:", error);
+            })
+    }
 
     const fetchAllData = () => {
         axios.get(endpoint + "/", {
@@ -96,41 +140,12 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     };
 
 
-    const handleEditRow = (id: string, newData: RowData) => {
+    const handleEditRow = (id: any, newData: RowData) => {
+        setShowEditModal(true);
+        setEditMode(true);
+        setEditedRow(newData);
+
         console.log('Editing... ' + id + newData);
-        let encodedRow = {} as IIndexable;
-        try {
-            encodedRow = encodeData([newData])[0]
-        } catch {
-            window.alert('Wrong date!');
-            return;
-        }
-
-
-        console.log("patch");
-        console.log(encodedRow);
-        axios.patch(endpoint + "/" + id, encodedRow,
-            {
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem('jwt')
-                },
-            })
-            .then(resp => {
-                setRows((prevRows) =>
-                    prevRows.map((row) => {
-                        if (row.Id === id) {
-                            return { ...row, ...newData };
-                        }
-                        return row;
-                    })
-                );
-            })
-            .catch(error => {
-                console.log("Error editing data:", error);
-                window.alert('Entered wrong data!');
-            })
-
-        console.log("fetched")
     };
 
     const handleDeleteRow = (id: string) => {
@@ -180,8 +195,12 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         setSortedBy(key);
     };
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchText(e.target.value);
+    const handleSearch = (e: any) => {
+        setSearchText(temporarySearch);
+    };
+
+    const handleChangeSearchText = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setTemporarySearch(e.target.value);
     };
 
     const filteredRows = rows.filter(
@@ -212,8 +231,12 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         doc.text(footer, (pageWidth - footerWidth) / 2, doc.internal.pageSize.height - 20);
 
         const tableData = [] as any[];
+        const columnNamesEdited = columnNames;
+        if (tableName == "Product in the Store") {
+            columnNamesEdited[columnNames.indexOf("Promotional")] = "UPC Promotional"
+        }
         rows.forEach(row => {
-            const data = columnNames.map((name) =>
+            const data = columnNamesEdited.map((name) =>
                 row[name]
             )
             tableData.push(data);
@@ -223,7 +246,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         autoTable(doc, {
             styles: { fontSize: fontSize, halign: 'center' },
             startY: 100,
-            head: [columnNames],
+            head: [columnNamesEdited],
             body: tableData,
             theme: 'striped'
         });
@@ -235,20 +258,20 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         localStorage.removeItem("role");
         localStorage.removeItem("username");
         localStorage.removeItem("jwt");
-      };
+    };
 
     if (rows.length != 0) return (
         <>
-            <div className={'database-container ' + (tableName == "Product" ? "max-width-75 " : "max-width-96 ") + (tableName=="Category" ? "padding-for-elements max-width-60" : "")}>
+            <div className={'database-container ' + (tableName == "Product" ? "max-width-70 " : "max-width-96 ") + (tableName == "Category" ? "padding-for-elements max-width-50 " : "") + (tableName == "Product in the Store" ? "max-width-80 " : "")}>
                 <div className='database-operations'>
                     <InputGroup className="my-3 flex">
                         <FormControl
                             placeholder="Search"
-                            value={searchText}
-                            onChange={handleSearch}
+                            value={temporarySearch}
+                            onChange={handleChangeSearchText}
                         />
                         <Button variant="info" size="lg" className="d-flex align-items-center" id='search-button'
-                            onClick={(e) => handleSearch}>
+                            onClick={handleSearch}>
                             <BsSearch />
                         </Button>
                         {(tableName != "Receipt" && localStorage.getItem("role")) != "Manager" ||
@@ -298,11 +321,36 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
 
             <Modal show={showEditModal} onHide={handleEditModalClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title>New {tableName}</Modal.Title>
+                    <Modal.Title>{editMode ? 'Edit' : 'New'} {tableName}</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    {tableName == "Employee" ? (
+                <Modal.Body id='#modal'>
+                    {columnNamesChange.map((columnName) => (
+                        columnName.includes("Date") ? (
+                            <Form.Group controlId={`form${columnName}`} key={columnName}>
+                                <Form.Label>{columnName}</Form.Label>
+                                <DatePickerInput handleDateChange={handleDateChange} columnName={columnName} selectedDate={editedRow[columnName]} />
+                            </Form.Group>
+                        ) : (
+                            <Form.Group controlId={`form${columnName}`} key={columnName}>
+                                <Form.Label>{columnName}</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={editedRow[columnName]}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, columnName)}
+                                />
+                            </Form.Group>
+                        )))}
+
+                    {tableName == "Employee" && !editMode ? (
                         <>
+                            <Form.Group controlId={`formusername`} key="username">
+                                <Form.Label>Username</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={editedRow["Username"]}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, "Username")}
+                                />
+                            </Form.Group>
                             <Form.Group controlId={`formpassword`} key="password">
                                 <Form.Label>Password</Form.Label>
                                 <Form.Control
@@ -313,24 +361,14 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             </Form.Group>
                         </>)
                         : null}
-                    {columnNames.filter((name) => name != "Id" && name != "Card Number").map((columnName) => (
-                        <Form.Group controlId={`form${columnName}`} key={columnName}>
-                            <Form.Label>{columnName}</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={editedRow[columnName]}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, columnName)}
-                            />
-                        </Form.Group>
-                    ))}
                 </Modal.Body>
                 {alertWrongNewData}
                 <Modal.Footer>
+                    <Button variant="primary" onClick={editMode ? handleUpdate : handleSave}>
+                        Save Changes
+                    </Button>
                     <Button variant="secondary" onClick={handleEditModalClose}>
                         Close
-                    </Button>
-                    <Button variant="primary" onClick={handleSave}>
-                        Save Changes
                     </Button>
                 </Modal.Footer>
             </Modal>

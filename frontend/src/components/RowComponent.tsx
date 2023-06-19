@@ -13,43 +13,32 @@ interface RowComponentProps {
 }
 
 export interface RowData {
-  id: string
   [key: string]: any;
 }
 
 const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, columnNames, handleReceiptClick }) => {
   const [row, setRow] = useState<RowData>(rowData);
-  const [editedData, setEditedData] = useState<RowData>({ ...rowData });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
-    e.target.style.width = e.target.value.length + 'ch';
-    setEditedData((prevData) => ({
-      ...prevData,
-      [key]: e.target.value,
-
-    }));
-  };
 
   if (row) return (
     <tr className='centered-input-text'>
       {columnNames.map((columnName) => (
         <td key={columnName} className='unselectable'>
           <input
+            readOnly
             type="text"
-            value={editedData[columnName]}
+            value={row[columnName]}
             maxLength={100}
-            size={(editedData[columnName] ? (editedData[columnName].toString().length) : 1)}
-            onChange={(columnName == "Id" || rowData["VAT"] != null) ? () => {} : (e) => handleChange(e, columnName)}
+            size={rowData["Username"] != null || rowData["Card Number"] != null  ? (row[columnName] ? (row[columnName].toString().length) : 1) : null}
           />
         </td>
       ))}
-      
+
       <td className='unselectable buttons-column d-flex align-middle justify-center'>
         {rowData["VAT"] != null &&
-        <ReceiptButton handleReceiptClick={handleReceiptClick} />
+          <ReceiptButton handleReceiptClick={handleReceiptClick} />
         }
         {rowData["VAT"] == null &&
-          <Button variant="primary" onClick={(e) => onEdit(row["Id"], editedData)} className='update-button'>
+          <Button variant="primary" onClick={(e) => onEdit(row["Id"], row)} className='update-button'>
             Edit
           </Button>
         }
@@ -63,7 +52,6 @@ const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, 
     </tr>
   )
   else {
-    setEditedData(rowData);
     setRow(rowData);
     return null;
   }

@@ -26,13 +26,16 @@ thead, tbody {
 .max-width-96 {
     max-width: 96%;
 }
-
-.max-width-75 {
-    max-width: 75%;
+.max-width-80 {
+    max-width: 80%;
 }
 
-.max-width-60 {
-    max-width: 60%;
+.max-width-70 {
+    max-width: 70%;
+}
+
+.max-width-50 {
+    max-width: 50%;
 }
 
 /*
@@ -120,7 +123,7 @@ table {
 
 Table thead {
     position: sticky;
-    top: 70px;
+    top: 55px;
     margin: 0 0 0 0;
 }
 
@@ -140,5 +143,24 @@ Table thead {
 .padding-for-elements td,
 .padding-for-elements th,
 .padding-for-elements th {
-    padding-inline: 70px;
+    padding-right: 40px;
+    padding-left: 40px;
+}
+
+.max-width-70 td,
+.max-width-70 th,
+.max-width-70 th {
+    padding-right: 20px;
+    padding-left: 30px;
+}
+
+.modal-body #datepicker{
+    width: 100%;
+}
+.modal-body .react-datepicker-wrapper {
+    width: 100%;
+}
+
+.modal-body .form-control, .modal-body #datepicker{
+    margin-bottom: 8px;
 }

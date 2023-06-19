@@ -4,6 +4,7 @@ import DatabaseComponent from '../components/DatabaseComponent';
 export default function Categories() {
     const rowData = {};
     const columnNames = ['Id', 'Name'];
+    const columnNamesChange = ['Name'];
     const tableName= "Category";
     const endpoint = "http://localhost:8080/manager/category";
 
@@ -30,6 +31,7 @@ export default function Categories() {
                 decodeData={decodeData}
                 encodeData={encodeData}
                 columnNames={columnNames}
+                columnNamesChange={columnNamesChange}
                 tableName={tableName} />
         </main>
     )

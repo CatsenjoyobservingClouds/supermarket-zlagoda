@@ -13,6 +13,7 @@ export default function Sales() {
                 decodeData={() => {}}
                 encodeData={() => {}}
                 columnNames={columnNames}
+                columnNamesChange={columnNames}
                 tableName={tableName} />
         </main>
     )

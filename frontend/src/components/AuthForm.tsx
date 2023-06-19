@@ -3,6 +3,7 @@ import { Container, Form, Button, Alert } from 'react-bootstrap';
 import axios from 'axios'
 import { useNavigate } from "react-router-dom";
 import '../css-files/AuthForm.css'; // Custom CSS file for additional styling
+import { BsEyeSlash, BsEye } from 'react-icons/bs';
 
 const HOST_NAME = 'http://localhost:8080';
 
@@ -13,6 +14,11 @@ export type AuthFormProps = {
 const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
   const navigate = useNavigate();
   const [areSubmittedWrongCredentials, setAreSubmittedWrongCredentials] = useState<Boolean | null>(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
@@ -50,17 +56,28 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
         <Form.Group controlId="formUsername" className="form-group">
           <Form.Label>Username</Form.Label>
           <Form.Control
-            type="text" name="username"  onChange={handleChange}
+            className='control-username'
+            type="text" name="username" onChange={handleChange}
             required
           />
         </Form.Group>
 
         <Form.Group controlId="formPassword" className="form-group">
           <Form.Label>Password</Form.Label>
-          <Form.Control
-            type="password" name="password" onChange={handleChange}
-            required
-          />
+          <div className="flex" id='password'>
+            <Form.Control
+              className='control-password'
+              type={passwordVisible ? 'text' : 'password'} name="password" onChange={handleChange}
+              required
+            />
+            <Button
+              variant="light"
+              onClick={togglePasswordVisibility}
+              id="password-toggle"
+            >
+              {passwordVisible ? <BsEyeSlash /> : <BsEye />}
+            </Button>
+          </div>
         </Form.Group>
 
         {submittedWrongCredentials}

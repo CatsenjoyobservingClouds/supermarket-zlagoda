@@ -11,6 +11,7 @@ export default function Products() {
         const chosenData = data.map((item) => ({
             'Id': item.id_product,
             'Name': item.product_name,
+            'Category Id': item.category_number,
             'Category': item.category_name,
             'Characteristics': item.characteristics
         }));
@@ -20,7 +21,7 @@ export default function Products() {
     const encodeData = (data: any[]) => {
         const chosenData = data.map((item) => ({
             "id_product": item["Id"],
-            "category_number": parseInt(item["Category"]),
+            "category_number": parseInt(item["Category Id"]),
             "product_name": item["Name"],
             "characteristics": item["Characteristics"]
         }));
@@ -34,6 +35,7 @@ export default function Products() {
                 decodeData={decodeData}
                 encodeData={encodeData}
                 columnNames={columnNames}
+                columnNamesChange={columnNames}
                 tableName={tableName} />
         </main>
     )
