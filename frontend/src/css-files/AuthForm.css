@@ -9,7 +9,7 @@
 }
 
 .auth-container {
-    margin-top: 70px;
+    /* margin-top: 40px; */
     background-image: url('../images/authform-background.jpg');
     background-size: 100% 100%;
     width: 100%;
@@ -24,7 +24,6 @@
 }
 
 .auth-form {
-    margin-bottom: 60px;
     width: max(200px, 45%);
     padding: max(40px, 4%);
     border-radius: 0px;

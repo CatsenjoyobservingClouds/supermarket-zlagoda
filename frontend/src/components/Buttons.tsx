@@ -16,9 +16,9 @@ interface ButtonProps {
 
 export const ReceiptButton: React.FC<ButtonProps> = ({ handleReceiptClick }) => {
     return (
-        <Button variant="info" size="sm" className="d-flex align-items-center"
+        <Button variant="info" size="sm" className="d-flex align-items-center mr-1"
             onClick={(e) => handleReceiptClick && handleReceiptClick()}>
-            <BsReceipt className="me-1" />
+            <BsReceipt className="mi-1" />
         </Button>
     );
 };

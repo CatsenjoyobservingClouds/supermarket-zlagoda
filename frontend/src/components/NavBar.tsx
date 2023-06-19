@@ -4,8 +4,11 @@ import React from 'react';
 import "../css-files/NavBar.css"
 
 export const NavBar = () => {
+    const href = window.location.href;
+    const hrefSplit = href.split("/");
+    const isTransparent = hrefSplit[hrefSplit.length - 1] == "" || href.includes("login");
     return (
-        <Navbar fixed="top" expand="lg" bg="light" variant="light">
+        <Navbar fixed="top" expand="lg" bg={`${isTransparent ? '' : 'light'}`} variant="light" className={`${isTransparent ? 'half-opacity-background' : ''}`}>
             <Container className='max-width-full'>
                 <Navbar.Brand href='/' className="justify-start">
                     <Logo />
@@ -28,7 +31,7 @@ export const NavBar = () => {
 
                                 <Navbar.Collapse className="justify-content-end">
                                     <Navbar.Text>
-                                        Signed in as: {localStorage.getItem("username")}
+                                        Signed in as: <a href='/user-info' className='ml-2'>{localStorage.getItem("username")}</a>
                                     </Navbar.Text>
                                 </Navbar.Collapse>
 
@@ -49,7 +52,7 @@ export const NavBar = () => {
 
                                     <Navbar.Collapse className="justify-content-end">
                                         <Navbar.Text>
-                                            Signed in as: {localStorage.getItem("username")}
+                                            Signed in as: <a href='/user-info' className='ml-2'>{localStorage.getItem("username")}</a>
                                         </Navbar.Text>
                                     </Navbar.Collapse>
 
@@ -63,8 +66,6 @@ export const NavBar = () => {
                         </Nav.Link>
                     </Navbar.Collapse>)
                 }
-
-
             </Container>
         </Navbar>
     )

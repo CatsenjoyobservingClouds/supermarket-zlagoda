@@ -20,8 +20,19 @@ thead, tbody {
 */
 .database-container {
     margin-top: 75px;
-    max-width: 96%;
     margin-inline: auto;
+}
+
+.max-width-96 {
+    max-width: 96%;
+}
+
+.max-width-75 {
+    max-width: 75%;
+}
+
+.max-width-60 {
+    max-width: 60%;
 }
 
 /*
@@ -57,12 +68,15 @@ table {
 /* after last commit  + bordered and striped*/
 
 
-.custom-table td, .custom-table th {
+.custom-table td,
+.custom-table th {
     text-align: left;
     padding: 8px;
 }
 
 .custom-table th {
+    /* display: flex;
+    flex-direction: row; */
     padding-top: 12px;
     padding-bottom: 12px;
     padding-left: 10px;
@@ -75,11 +89,13 @@ table {
     border-bottom: 1px solid #ddd;
 }
 
-.custom-table tr:hover, .custom-table tr:focus, .custom-table tr:active{
+.custom-table tr:hover,
+.custom-table tr:focus,
+.custom-table tr:active {
     background-color: #d7eaff;
 }
 
-.custom-table tr:focus{
+.custom-table tr:focus {
     background-color: #d7eaff;
 }
 
@@ -92,15 +108,17 @@ table {
     font-weight: 400;
 
     margin: 20px 0;
+    padding-left: 10px;
 
     border: 1px solid #ccc;
-} 
+}
 
-.custom-table td.buttons-column,  .custom-table th.buttons-column{
+.custom-table td.buttons-column,
+.custom-table th.buttons-column {
     text-align: center;
 }
 
-Table thead{
+Table thead {
     position: sticky;
     top: 70px;
     margin: 0 0 0 0;
@@ -114,4 +132,13 @@ Table thead{
     background-color: #60b7ff;
 }
 
+@font-face {
+    font-family: 'Roboto';
+    src: url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+}
 
+.padding-for-elements td,
+.padding-for-elements th,
+.padding-for-elements th {
+    padding-inline: 70px;
+}

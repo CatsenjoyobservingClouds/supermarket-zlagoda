@@ -3,7 +3,7 @@ import AuthForm, {AuthFormProps} from '../components/AuthForm';
 
 const Login: React.FC<AuthFormProps> = ({onLogin}) => {
   return (
-    <main>
+    <main className="overflow-hidden h-screen">
         <AuthForm onLogin={onLogin}/>
     </main>
   )

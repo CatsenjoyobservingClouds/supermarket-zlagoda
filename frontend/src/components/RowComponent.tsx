@@ -44,13 +44,13 @@ const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, 
         </td>
       ))}
       
-      <td className='unselectable buttons-column'>
+      <td className='unselectable buttons-column d-flex align-middle justify-center'>
         {rowData["VAT"] != null &&
         <ReceiptButton handleReceiptClick={handleReceiptClick} />
         }
         {rowData["VAT"] == null &&
           <Button variant="primary" onClick={(e) => onEdit(row["Id"], editedData)} className='update-button'>
-            Update
+            Edit
           </Button>
         }
         {(rowData["VAT"] != null || localStorage.getItem("role") != "Cashier") &&

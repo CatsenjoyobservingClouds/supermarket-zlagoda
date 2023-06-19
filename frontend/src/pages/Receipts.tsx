@@ -13,7 +13,7 @@ import '../css-files/DatabaseComponent.css';
 const Receipts = () => {
     const columnNames = ['Receipt', 'Employee', 'Customer', 'Card Number', 'Print Date', 'Total Sum', 'VAT'];
     const tableName = "Receipt";
-    const endpoint = "http://localhost:8080/" + sessionStorage.getItem("role")?.toLowerCase() +"/check";
+    const endpoint = "http://localhost:8080/" + localStorage.getItem("role")?.toLowerCase() +"/check";
 
     const decodeData = (data: any) => {
         const chosenData = data.map((item: any) => ({
@@ -93,7 +93,7 @@ const Receipts = () => {
 
         axios.post(endpoint + "/", encodedRow, {
             headers: {
-                "Authorization": "Bearer " + sessionStorage.getItem('jwt')
+                "Authorization": "Bearer " + localStorage.getItem('jwt')
             }
         })
             .then(resp => {
@@ -111,7 +111,7 @@ const Receipts = () => {
     const fetchAllData = () => {
         axios.get(endpoint + "/", {
             headers: {
-                "Authorization": "Bearer " + sessionStorage.getItem('jwt')
+                "Authorization": "Bearer " + localStorage.getItem('jwt')
             }
         })
             .then(response => {
@@ -139,7 +139,7 @@ const Receipts = () => {
         axios.patch(endpoint + "/" + id, encodedRow,
             {
                 headers: {
-                    "Authorization": "Bearer " + sessionStorage.getItem('jwt')
+                    "Authorization": "Bearer " + localStorage.getItem('jwt')
                 },
             })
             .then(resp => {
@@ -171,7 +171,7 @@ const Receipts = () => {
         console.log("delete");
         axios.delete(endpoint + "/" + id, {
             headers: {
-                "Authorization": "Bearer " + sessionStorage.getItem('jwt')
+                "Authorization": "Bearer " + localStorage.getItem('jwt')
             }
         })
             .then(resp => {
@@ -227,16 +227,17 @@ const Receipts = () => {
                             value={searchText}
                             onChange={handleSearch}
                         />
-                        <InputGroup.Text>
-                            <BsSearch onClick={(e) => handleSearch} />
-                        </InputGroup.Text>
+                        <Button variant="info" size="lg" className="d-flex align-items-center" id='search-button'
+                            onClick={(e) => handleSearch}>
+                            <BsSearch />
+                        </Button>
                         {(tableName != "Receipt" && localStorage.getItem("role")) != "Manager" ||
                             <Button variant="success" onClick={(e) => handleEditModalShow()}>
-                                Add New {tableName}
+                                Add {tableName}
                             </Button>}
 
                         <Button variant="secondary">
-                            Print Documents
+                            Print Report
                         </Button>
                     </InputGroup>
                 </div>

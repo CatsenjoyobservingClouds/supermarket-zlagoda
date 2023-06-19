@@ -1,20 +1,18 @@
 import React, { MouseEventHandler } from 'react'
 import NavBar from '../components/NavBar'
+import '../css-files/Home.css';
 
 interface HomeProps {
-    user: string
+    user: string | null
     onLogout: MouseEventHandler<HTMLButtonElement>
 }
 
 const Home: React.FC<HomeProps> = ({ user, onLogout }) => {
     return (
-        <main className='margin-top'>
-            <h2>You are signed in as {user}</h2>
-            <h3>Have a great experience navigating through our data</h3>
-            <button type="button" className="btn btn-primary ms-5 btn-lg" onClick={onLogout}>
-                Change password
-            </button>
-            <button type="button" className="btn btn-danger ms-5 btn-lg" onClick={onLogout}>
+        <main className='margin-top home-container'>
+            <h2 className="mb-12 text-6xl main-text">You are signed in as {user}</h2>
+            <h3 className='mb-10 text-2xl'>Have a great experience navigating through our website</h3>
+            <button type="submit" className="my-button" onClick={onLogout}>
                 Sign out
             </button>
         </main>

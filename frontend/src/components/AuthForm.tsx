@@ -32,7 +32,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
         console.log("Error while receiving JWT token.")
       });
 
-    console.log(sessionStorage.getItem('jwt'))
+    console.log(localStorage.getItem('jwt'))
   };
 
   const submittedWrongCredentials = areSubmittedWrongCredentials === true && (
@@ -65,7 +65,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
 
         {submittedWrongCredentials}
 
-        <Button type="submit">
+        <Button type="submit" className='my-button'>
           Sign in
         </Button>
       </Form>

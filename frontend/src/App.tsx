@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
@@ -7,15 +6,13 @@ import NavBar from './components/NavBar';
 import Login from './pages/Login';
 import Employees from './pages/Employees';
 import Products from './pages/Products';
-import Sales from './pages/Sales';
 import CustomerCards from './pages/CustomerCards';
 import StoreProducts from './pages/StoreProducts';
 import Categories from './pages/Categories';
 import Checks from './pages/Receipts';
 import Home from './pages/Home';
 import jwt from 'jwt-decode';
-import { Navbar } from 'react-bootstrap';
-// import Layout from './components/Layout';
+import UserInfo from './pages/UserInfo';
 
 
 interface ProtectedRouteProps {
@@ -63,33 +60,39 @@ const userRoles: UserRoles = {
 };
 
 
+
 function App() {
-  const [userRole, setUserRole] = useState(sessionStorage.getItem("role") || null);
+  function tokenExpired() {
+    handleLogout();
+    console.log('userRole deleted from localStorage');
+  }
+
+  const [userRole, setUserRole] = useState(localStorage.getItem("role"));
 
   const handleLogout = () => {
     setUserRole(null);
-    sessionStorage.removeItem("role");
-    sessionStorage.removeItem("username");
-    sessionStorage.removeItem("jwt");
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
+    localStorage.removeItem("jwt");
   };
 
   const handleLogin = (jwt_token: string) => {
+    setTimeout(tokenExpired, 3600000);
     const parsedJWT = jwt(jwt_token) as IIndexable
-    sessionStorage.setItem("username", parsedJWT["username" as keyof IIndexable])
-    sessionStorage.setItem("role", parsedJWT["role" as keyof IIndexable])
-    sessionStorage.setItem("jwt", jwt_token);
-    setUserRole(sessionStorage.getItem("role"));
+    localStorage.setItem("username", parsedJWT["username" as keyof IIndexable])
+    localStorage.setItem("role", parsedJWT["role" as keyof IIndexable])
+    localStorage.setItem("jwt", jwt_token);
+    setUserRole(localStorage.getItem("role"));
   }
 
   const hasAccess = (path: string) => {
-    if (!userRole) {
-      console.log("oop");
+    if (!localStorage.getItem("role")) {
       return false;
     }
-    console.log("done");
     const resource = path.replace(/^\//, '').replaceAll("-", "_");
     return userRoles[userRole as keyof UserRoles][resource as keyof RestrictedPages] || false;
   };
+
 
 
   return (
@@ -100,11 +103,13 @@ function App() {
           <Route
             path="/"
             element={
-              userRole ? <Home user={userRole} onLogout={handleLogout} /> : <Navigate to="/login" />
+              localStorage.getItem("role") ? <Home user={localStorage.getItem("role")} onLogout={handleLogout} /> : <Navigate to="/login" />
             }
           />
 
-          <Route path='/login' element={<Login onLogin={handleLogin} />} />
+
+          <Route path='/login' element={localStorage.getItem("role") ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} />
+          <Route path='/user-info' element={localStorage.getItem("role") ? <UserInfo onLogout={handleLogout} /> : <Navigate to="/" />} />
           <Route path='/employees' element={hasAccess("/employees") ? <Employees /> : <Navigate to="/" />} />
           <Route path='/products' element={hasAccess("/products") ? <Products /> : <Navigate to="/" />} />
           <Route path='/receipts' element={hasAccess("/receipts") ? <Checks /> : <Navigate to="/" />} />
@@ -117,147 +122,5 @@ function App() {
     </div>
   )
 }
-
-// return (
-//   <div className="App">
-//     <BrowserRouter>
-//       {<Navigate to="/" />}
-//       <Routes>
-//         
-//         <Route path="/login" element={<Login />} />
-//         <NavBar />
-// <ProtectedRoute
-//   path="/employees"
-//   page={<Employees />}
-// />
-//         <ProtectedRoute
-//           path="/products"
-//           page={<Products />}
-//         />
-//         <ProtectedRoute
-//           path="/checks"
-//           page={<Checks />}
-//         />
-//         <ProtectedRoute
-//           path="/categories"
-//           page={<Categories />}
-//         />
-//         <ProtectedRoute
-//           path="/customer-cards"
-//           page={<CustomerCards />}
-//         />
-//         <ProtectedRoute
-//           path="/products-in-the-store"
-//           page={<StoreProducts />}
-//         />
-//         <ProtectedRoute
-//           path="/sales"
-//           page={<Sales />}
-//         />
-//       </Routes>
-//     </BrowserRouter>
-//   </div >
-
-
-// const browserRouter = createBrowserRouter([
-//   {
-//     path: "/",
-//     element: user ? <Menu onLogout={handleLogout} /> :
-//       <Login onLogin={(role) => {
-//         setUser(role);
-//         sessionStorage.setItem("userRole", role);
-//       }} />,
-//     children: [
-//       {
-//         path: "*",
-//         element: (
-//           <Routes>
-//             <ProtectedRoute
-//               path="employees"
-//               page={<Employees />}
-//             />
-//             <ProtectedRoute
-//               path="products"
-//               page={<Products />}
-//             />
-//             <ProtectedRoute
-//               path="checks"
-//               page={<Checks />}
-//             />
-//             <ProtectedRoute
-//               path="categories"
-//               page={<Categories />}
-//             />
-//             <ProtectedRoute
-//               path="customer-cards"
-//               page={<CustomerCards />}
-//             />
-//             <ProtectedRoute
-//               path="products-in-the-store"
-//               page={<StoreProducts />}
-//             />
-//             <ProtectedRoute
-//               path="sales"
-//               page={<Sales />}
-//             />
-//           </Routes>
-//         ),
-//       },
-//     ],
-//   },
-// ]);
-
-// return (
-//   <div className="App">
-//     <>
-//       <RouterProvider router={browserRouter}>
-//         <Outlet />
-//       </RouterProvider>
-//     </>
-//   </div>
-// );
-
-// return (
-//   // <Routes>
-//   //   <Route path="/" element={<Login />} />
-//   //   <Route path="employees" element={<Employees />} />
-//   // </Routes>
-//   <div className='App'>
-//     <Router>
-//       <NavBar />
-//       <Routes>
-//         <Route path='/' element={<Login />} />
-
-//         <Route path='/employees' element={<Employees />} />
-//         <Route path='/products' element={<Products />} />
-//         <Route path='/checks' element={<Checks />} />
-//         <Route path='/sales' element={<Sales />} />
-//         <Route path='/customer-cards' element={<CustomerCards />} />
-//         <Route path='/categories' element={<Categories />} />
-//         <Route path='/products-in-the-store' element={<StoreProducts />} />
-
-//         {/* <Route path='about' element={<About />} />
-//         <Route path='cocktail/:id' element={<SingleCocktail />} />
-//         <Route path='*' element={<Error />} /> */}
-//       </Routes>
-//     </Router>
-//   </div>
-
-//   // {/* <header className="App-header">
-//   //   <img src={logo} className="App-logo" alt="logo" />
-//   //   <p>
-//   //     Edit <code>src/App.tsx</code> and save to reload.
-//   //   </p>
-//   //   <a
-//   //     className="App-link"
-//   //     href="https://reactjs.org"
-//   //     target="_blank"
-//   //     rel="noopener noreferrer"
-//   //   >
-//   //     Learn React
-//   //   </a>
-//   // </header> */}
-// );
-// }
 
 export default App;

@@ -5,19 +5,25 @@
 }
 
 .navbar {
-    font-size: 16.5px;
+    padding: 0px;
+    padding-top: 1px;
+    font-size: 16px;
 }
 
 .justify-content-end .navbar-text {
     color: black;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 16px;
-
 }
 
 .nav-link {
     margin-right: 25px;
-    color: rgb(84, 80, 80);
+    font-weight: 500;
+    color: rgb(93, 83, 83);
+}
+
+.half-opacity-background{
+    background: rgba(255, 255, 255, 0.878);
 }
 
 @media (max-width: 1240px) {
@@ -27,4 +33,8 @@
     .navbar {
         font-size: 15.5px;
     }
+}
+
+.navbar-text a{
+    color: rgb(30, 55, 153);
 }
