@@ -19,7 +19,7 @@ type CustomerCard struct {
 }
 
 func (card *CustomerCard) VerifyCorrectness() error {
-	stringParameters := []string{card.CardNumber, card.LastName, card.FirstName, card.PhoneNumber}
+	stringParameters := []string{card.LastName, card.FirstName, card.PhoneNumber}
 	for _, stringParameter := range stringParameters {
 		if stringParameter == "" {
 			return errors.New("cannot have empty strings")
