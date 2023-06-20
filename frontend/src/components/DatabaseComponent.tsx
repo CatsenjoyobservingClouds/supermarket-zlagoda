@@ -11,6 +11,7 @@ import jsPDF from 'jspdf';
 import Report from '../pages/Report';
 import DatePickerInput from './DatePicker';
 import DropdownList from './DropdownList';
+import { decodeData2 } from '../pages/Categories'
 
 
 
@@ -160,7 +161,10 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             })
     }
 
-    const fetchAllData = () => {
+    const fetchAllData = async () => {
+        if(tableName == "Category") {
+            handleAveragePrice();
+        } else {
         axios.get(endpoint + "/", {
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem('jwt')
@@ -170,53 +174,66 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 const data = decodeData(response.data);
                 setRows(data);
                 setFilteredRows(data);
-                setIsAveragePrice(false);
-                if (tableName == "Category") {
-                    setColumnNamesThis(["Id", "Category"])
-                }
+                // setIsAveragePrice(false);
+                // if (tableName == "Category") {
+                //     setColumnNamesThis(["Id", "Category"])
+                // }
             })
             .catch(error => {
                 handleLogout();
                 console.log("Error fetching data:", error);
             })
+        }
+        // }
     };
 
-    const handleAveragePrice = (e: any) => {
-        if (e.target.checked) {
-        const toAsc = asc ? "ASC" : "DESC";
-        axios.get("http://localhost:8080/manager/analytics/averagePricePerCategory?decimalPlaces=2&orderBy=" + "category_name" + "&ascDesc=" + toAsc, {
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem('jwt')
-            }
-        })
-            .then(response => {
-                setIsAveragePrice(true);
-                setColumnNamesThis(["Id", "Category", "Average Price"])
-                setFilteredRows(response.data.map((item: any) => ({
-                    'Id': item.category_number,
-                    'Category': item.category_name,
-                    'Average Price': item.average_price
-                })));
-            })
-            .catch(error => {
-                handleLogout();
-                console.log("Error fetching data:", error);
-            })
-        }else{
-            setIsAveragePrice(false)
-            setFilteredRows(rows);
-            setColumnNamesThis(["Id", "Category"])
-        }
-    }
+    // const handlePrice = async (e: any) => {
+    //     if (e.target.checked) {
+    //         await handleAveragePrice(asc).then(response => {
+    //             const data = response?.data?.map((item: any) => ({
+    //                 'Id': item.category_number,
+    //                 'Category': item.category_name,
+    //                 'Average Price': item.average_price
+    //             }))
+    //             setIsAveragePrice(true);
+    //             setColumnNamesThis(["Id", "Category", "Average Price"])
+    //             setFilteredRows((prev) => {
+    //                 const updatedRows = [...prev];
+    //                 updatedRows.forEach((row, index) => {
+    //                     row["Average Price"] = data?.[index]?.["Average Price"]
+    //                 });
+    //                 return updatedRows;
+    //             });
+    //         })
+    //             .catch(error => {
+    //                 console.log("Error fetching data:", error);
+    //             })
+    //     } else {
+    //         setIsAveragePrice(false)
+    //         setFilteredRows(rows);
+    //         setColumnNamesThis(["Id", "Category"])
+    //     }
+    //     setFilteredRows((prev) => prev)
+    //     // fetchAllData();
+    // }
 
-    useEffect(() => {
-        console.log("this" + filteredRows);
-    }, [filteredRows]);
 
-    useEffect(() => {
-        setFilteredRows((prev) => prev)
-        console.log(filteredRows)
-    }, [columnNamesThis]);
+
+    // useEffect(() => {
+    //     console.log("filteredRows:", filteredRows);
+    //     // setFilteredRows((prevRows) => {
+    //     //     const updatedRows = [...prevRows];
+    //     //     updatedRows.forEach((row) => {
+    //     //         "Average Price"
+    //     //     });
+    //     //     return updatedRows;
+    //     // });
+    // }, [filteredRows]);
+
+
+
+
+
 
     // const filteredRowsGet = () => {
     //     if (tableName == "Category" && isAveragePrice) {
@@ -391,6 +408,37 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         }
     };
 
+    const handleAveragePrice = () => {
+        const toAsc = asc ? "ASC" : "DESC";
+        axios.get("http://localhost:8080/manager/analytics/averagePricePerCategory?decimalPlaces=2&orderBy=" + "category_name" + "&ascDesc=" + toAsc, {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem('jwt')
+            }
+        })
+            .then(response => {
+                const data = decodeData2(response.data);
+                setFilteredRows(data)
+                setRows(data);
+            })
+            .catch(error => {
+                handleLogout();
+                console.log("Error fetching data:", error);
+            })
+    }
+
+    // useEffect(() => {
+    //     console.log("filteredRows:", filteredRows);
+    // }, [filteredRows]);
+
+    // useEffect(() => {
+    //     console.log("columnNamesThis:", columnNamesThis);
+    // }, [columnNamesThis]);
+
+    // useEffect(() => {
+    //     setFilteredRows((prev) => prev);
+    // }, [rows]);
+
+
 
     const generatePdf = () => {
         const unit = "pt";
@@ -440,6 +488,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         localStorage.removeItem("username");
         localStorage.removeItem("jwt");
     };
+
 
     if (rows.length != 0) return (
         <>
@@ -549,7 +598,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                     }
                     {tableName == "Category" &&
                         <div>
-                            <Form.Check inline label="Category Average Price" type="checkbox" value="ksk" checked={isAveragePrice} onChange={(e: any) => handleAveragePrice(e)} className="ml-2 rounded-none" />
+                            <Form.Check inline label="Category Average Price" type="checkbox" value="" onChange={(e: any) => handleAveragePrice()} className="ml-2 rounded-none" />
                         </div>
                     }
                 </div>
