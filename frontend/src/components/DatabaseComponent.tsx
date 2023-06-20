@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Table, Button, InputGroup, FormControl, Modal, Form, Alert } from 'react-bootstrap';
 import { BsSearch, BsFillCaretUpFill, BsFillCaretDownFill } from 'react-icons/bs';
 import RowComponent, { RowData } from './RowComponent';
@@ -11,6 +11,7 @@ import jsPDF from 'jspdf';
 import Report from '../pages/Report';
 import DatePickerInput from './DatePicker';
 import DropdownList from './DropdownList';
+import { AnyNsRecord } from 'dns';
 
 
 
@@ -35,7 +36,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     const [temporarySearch, setTemporarySearch] = useState('');
     const [listItems, setListItems] = useState();
     const [filteredRows, setFilteredRows] = useState<RowData[]>(rows);
-    const [dataWithAveragePrice, setDataWithAveragePrice] = useState<RowData[]>([]);
+    // const [dataWithAveragePrice, setDataWithAveragePrice] = useState<RowData[]>([]);
     const [isAveragePrice, setIsAveragePrice] = useState<boolean>(false);
     const [asc, setAsc] = useState<boolean>(true);
 
@@ -169,6 +170,10 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 const data = decodeData(response.data);
                 setRows(data);
                 setFilteredRows(data);
+                setIsAveragePrice(false);
+                if(tableName=="Category") {
+                    columnNames = ["Id", "Category"]
+                }
             })
             .catch(error => {
                 handleLogout();
@@ -176,52 +181,61 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             })
     };
 
-    const handleGetAveragePrice = () => {
+    const handleAveragePrice = (e: any) => {
+        if(!e.target.checked) {
+            setIsAveragePrice((prev) => !prev)
+            return
+        }
         const toAsc = asc ? "ASC" : "DESC";
-        axios.get("http://localhost:8080/manager/analytics/averagePricePerCategory?decimalPlaces=2&orderBy=" + sortedBy + "&ascDesc=" + asc, {
+        axios.get("http://localhost:8080/manager/analytics/averagePricePerCategory?decimalPlaces=2&orderBy=" + "category_name" + "&ascDesc=" + toAsc, {
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem('jwt')
             }
         })
             .then(response => {
+                setIsAveragePrice(true);
                 const data = response.data.map((item: any) => ({
                     'Id': item.category_number,
                     'Category': item.category_name,
                     'Average Price': item.average_price
                 }));
-                setDataWithAveragePrice(data)
-                return data;
+                columnNames = ["Id", "Category", "Average Price"]
+                setRows(data);
+                setFilteredRows(data);
             })
             .catch(error => {
                 handleLogout();
                 console.log("Error fetching data:", error);
             })
-        return filteredRows
     }
 
-    const filteredRowsGet = () => {
-        if (tableName == "Category" && isAveragePrice) {
-            if (dataWithAveragePrice.length != 0) {
-                return dataWithAveragePrice
-            } else {
-                return handleGetAveragePrice();
-            }
-        }
+    useEffect(() => {
+        console.log("this" + filteredRows);
+      }, [filteredRows]);
 
-        if(sortedBy !== ""){
-            handleSort(sortedBy);
-        }
+    // const filteredRowsGet = () => {
+    //     if (tableName == "Category" && isAveragePrice) {
+    //         if (dataWithAveragePrice.length != 0) {
+    //             return dataWithAveragePrice
+    //         } else {
+    //             return handleGetAveragePrice();
+    //         }
+    //     }
 
-        return filteredRows
-        
-        //     filteredRows.filter(
-        //     (row) =>
-        //         columnNames.some((columnName) => {
-        //             const value = String(row[columnName]).toLowerCase();
-        //             return value.includes(searchText.toLowerCase());
-        //         })
-        // );
-    }
+    //     if(sortedBy !== ""){
+    //         handleSort(sortedBy);
+    //     }
+
+    //     return filteredRows
+
+    //     filteredRows.filter(
+    //     (row) =>
+    //         columnNames.some((columnName) => {
+    //             const value = String(row[columnName]).toLowerCase();
+    //             return value.includes(searchText.toLowerCase());
+    //         })
+    // );
+    // }
 
 
     const handleEditRow = (id: any, newData: RowData) => {
@@ -529,7 +543,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                     }
                     {tableName == "Category" &&
                         <div>
-                            <Form.Check inline label="Category Average Price" type="checkbox" value="ksk" onChange={(e: any) => setIsAveragePrice(e.target.checked)} className="ml-2 rounded-none" />
+                            <Form.Check inline label="Category Average Price" type="checkbox" value="ksk" checked={isAveragePrice} onChange={(e: any) => handleAveragePrice(e)} className="ml-2 rounded-none" />
                         </div>
                     }
                 </div>
@@ -551,7 +565,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredRowsGet().map((row) => (
+                            {filteredRows.map((row) => (
                                 <RowComponent
                                     key={row.Id}
                                     rowData={row}
