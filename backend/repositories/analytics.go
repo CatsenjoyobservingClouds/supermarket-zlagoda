@@ -93,11 +93,11 @@ func (repo *PostgresAnalyticsRepository) GetCategorySalesPerCashier(categoryNumb
 
 func (repo *PostgresAnalyticsRepository) GetRegisteredCustomersWhoHaveBeenServedByEveryCashier() ([]models.CustomerCard, error) {
 	query :=
-		`SELECT card_number, cust_surname, cust_name, cust_patronymic
+		`SELECT *
 		FROM customer_card
 		WHERE NOT EXISTS (SELECT *
 		                  FROM employee
-		                  WHERE empl_role = 'Касир' AND NOT EXISTS (SELECT *
+		                  WHERE empl_role = 'Cashier' AND NOT EXISTS (SELECT *
 		                                                            FROM "check"
 		                                                            WHERE "check".card_number = customer_card.card_number 
 		                                                              AND "check".id_employee = employee.id_employee
@@ -107,12 +107,16 @@ func (repo *PostgresAnalyticsRepository) GetRegisteredCustomersWhoHaveBeenServed
 	var customers []models.CustomerCard
 	err := db.Select(&customers, query)
 
+	if customers == nil {
+		customers = []models.CustomerCard{}
+	}
+
 	return customers, err
 }
 
 func (repo *PostgresAnalyticsRepository) GetCashiersWhoHaveSoldEveryProductInTheStore() ([]models.Employee, error) {
 	query :=
-		`SELECT employee.id_employee, empl_surname
+		`SELECT *
 		FROM employee
 		WHERE NOT EXISTS (SELECT UPC
 		                 FROM store_product
@@ -125,6 +129,10 @@ func (repo *PostgresAnalyticsRepository) GetCashiersWhoHaveSoldEveryProductInThe
 
 	var cashiers []models.Employee
 	err := db.Select(&cashiers, query)
+
+	if cashiers == nil {
+		cashiers = []models.Employee{}
+	}
 
 	return cashiers, err
 }

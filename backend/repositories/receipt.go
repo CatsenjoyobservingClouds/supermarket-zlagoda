@@ -19,30 +19,41 @@ func (repo *PostgresReceiptRepository) CreateReceipt(employeeUsername string, re
 		return nil, err
 	}
 
-	getProductSellingPriceQuery := `SELECT selling_price FROM "store_product" WHERE upc = '%v'`
+	getProductInfoQuery :=
+		`SELECT selling_price, product_name
+		FROM "store_product" 
+		    INNER JOIN product p on p.id_product = store_product.id_product 
+		WHERE upc = $1`
 	decrementProductInStoreAmountQuery := `UPDATE "store_product" SET products_number = products_number - $1 WHERE upc = $2`
 	createReceiptProductQuery := `INSERT INTO "sale" (upc, check_number, product_number, selling_price) VALUES ($1, $2, $3, $4)`
 
-	for i, product := range receipt.Products {
-		err := db.Get(&receipt.Products[i].SellingPrice, fmt.Sprintf(getProductSellingPriceQuery, product.UPC))
-		if err != nil {
+	totalSum := 0.0
+	for i := range receipt.Products {
+		if err := db.QueryRow(getProductInfoQuery, receipt.Products[i].UPC).Scan(
+			&receipt.Products[i].SellingPrice, &receipt.Products[i].ProductName,
+		); err != nil {
 			return nil, err
 		}
 
 		transaction := db.MustBegin()
 
-		_, err = transaction.Exec(decrementProductInStoreAmountQuery, product.Amount, product.UPC)
-		if err != nil {
+		if _, err := transaction.Exec(
+			decrementProductInStoreAmountQuery, receipt.Products[i].Amount, receipt.Products[i].UPC,
+		); err != nil {
 			return nil, err
 		}
 
-		transaction.MustExec(createReceiptProductQuery, product.UPC, receipt.ReceiptNumber, product.Amount, product.SellingPrice)
+		transaction.MustExec(createReceiptProductQuery, receipt.Products[i].UPC, receipt.ReceiptNumber, receipt.Products[i].Amount, receipt.Products[i].SellingPrice)
 
-		err = transaction.Commit()
-		if err != nil {
+		if err := transaction.Commit(); err != nil {
 			return nil, fmt.Errorf("failed to commit transaction: %w", err)
 		}
+
+		totalSum += float64(receipt.Products[i].Amount) * receipt.Products[i].SellingPrice
 	}
+
+	receipt.TotalSum = totalSum
+	receipt.VAT = 0.2 * totalSum
 
 	getEmployeeFullNameQuery := `SELECT empl_surname, empl_name, empl_patronymic FROM "employee" WHERE id_employee = $1`
 	if err := db.QueryRow(getEmployeeFullNameQuery, receipt.EmployeeID).Scan(
@@ -51,18 +62,24 @@ func (repo *PostgresReceiptRepository) CreateReceipt(employeeUsername string, re
 		return nil, err
 	}
 
-	if !receipt.CardNumber.Valid {
-		return receipt, nil
+	if receipt.CardNumber.Valid {
+		getCustomerDataQuery := `SELECT cust_surname, cust_name, cust_patronymic, percent FROM "customer_card" WHERE card_number = $1`
+
+		var discountPercent int
+		if err := db.QueryRow(getCustomerDataQuery, receipt.CardNumber).Scan(
+			&receipt.CustomerLastName, &receipt.CustomerFirstName, &receipt.CustomerMiddleName, &discountPercent,
+		); err != nil {
+			return nil, err
+		}
+
+		receipt.TotalSum *= float64(100-discountPercent) / 100
+		receipt.VAT = 0.2 * receipt.TotalSum
 	}
 
-	getCustomerFullNameQuery := `SELECT cust_surname, cust_name, cust_patronymic FROM "customer_card" WHERE card_number = $1`
-	if err := db.QueryRow(getCustomerFullNameQuery, receipt.CardNumber).Scan(
-		&receipt.CustomerLastName, &receipt.CustomerFirstName, &receipt.CustomerMiddleName,
-	); err != nil {
-		return nil, err
-	}
+	setDiscountedPriceQuery := `UPDATE "check" SET sum_total = $1, vat = $2 WHERE check_number = $3`
+	_, err := db.Exec(setDiscountedPriceQuery, receipt.TotalSum, receipt.VAT, receipt.ReceiptNumber)
 
-	return receipt, nil
+	return receipt, err
 }
 
 func (repo *PostgresReceiptRepository) GetAllReceipts(orderBy string, ascDesc string) ([]models.Receipt, error) {
