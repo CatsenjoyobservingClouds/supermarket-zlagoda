@@ -44,15 +44,15 @@ const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, 
       ))}
 
       <td className='unselectable buttons-column d-flex align-middle justify-center'>
-        {rowData["VAT"] != null &&
-          <ReceiptButton handleReceiptClick={handleReceiptClick} />
+        {rowData["VAT, UAH"] != null &&
+          <ReceiptButton handleReceiptClick={() => handleReceiptClick?.(row["Id"], row)} />
         }
-        {rowData["VAT"] == null &&
+        {rowData["VAT, UAH"] == null &&
           <Button variant="primary" onClick={(e) => onEdit(row["Id"], row)} className='update-button'>
             Edit
           </Button>
         }
-        {(rowData["VAT"] != null || localStorage.getItem("role") != "Cashier") &&
+        {(rowData["VAT, UAH"] != null || localStorage.getItem("role") != "Cashier") &&
           <Button variant="danger" onClick={(e) => onDelete(row["Id"])} className='delete-button'>
             Delete
           </Button>

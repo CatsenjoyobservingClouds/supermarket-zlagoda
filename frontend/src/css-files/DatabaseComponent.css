@@ -39,6 +39,10 @@ thead, tbody {
     max-width: 50%;
 }
 
+.max-width-85 {
+    max-width: 85%;
+}
+
 /*
 table {
     table-layout: auto;
@@ -166,3 +170,27 @@ Table thead {
 .modal-body #datepicker {
     margin-bottom: 14px;
 }
+
+#special-thead {
+    top: 0px;
+    background-color: #bbe0ff;
+    position: relative;
+}
+
+ .width-80 {
+    max-width: 90%;
+    margin-left: 5%;
+    margin-bottom: 10px;
+} 
+
+#datepicker-2 {
+    display: flex;
+    margin-right: 10px; 
+    flex-direction: row;
+}
+
+#date-time-picker {
+    display: flex;
+    flex-direction: column;
+    margin-right: 10px; 
+  }

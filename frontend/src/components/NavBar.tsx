@@ -44,7 +44,7 @@ export const NavBar = () => {
                                         <Nav className="m-auto">
                                             <Nav.Link href='/employees'>Employees</Nav.Link>
                                             <Nav.Link href='/customer-cards'>Customer Cards</Nav.Link>
-                                            <Nav.Link href='/products'>Products</Nav.Link>                                        <Nav.Link href='/products-in-the-store'>Products in the Store</Nav.Link>
+                                            <Nav.Link href='/products'>Products</Nav.Link>
                                             <Nav.Link href='/products-in-the-store'>Products in the Store</Nav.Link>
                                             <Nav.Link href='/receipts'>Receipts</Nav.Link>
                                         </Nav>

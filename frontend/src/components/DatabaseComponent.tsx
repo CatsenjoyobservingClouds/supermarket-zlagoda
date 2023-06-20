@@ -11,7 +11,6 @@ import jsPDF from 'jspdf';
 import Report from '../pages/Report';
 import DatePickerInput from './DatePicker';
 import DropdownList from './DropdownList';
-import { AnyNsRecord } from 'dns';
 
 
 
@@ -39,6 +38,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     // const [dataWithAveragePrice, setDataWithAveragePrice] = useState<RowData[]>([]);
     const [isAveragePrice, setIsAveragePrice] = useState<boolean>(false);
     const [asc, setAsc] = useState<boolean>(true);
+    const [columnNamesThis, setColumnNamesThis] = useState(columnNames);
 
 
     const alertWrongNewData = wrongNewData === true && (
@@ -171,8 +171,8 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 setRows(data);
                 setFilteredRows(data);
                 setIsAveragePrice(false);
-                if(tableName=="Category") {
-                    columnNames = ["Id", "Category"]
+                if (tableName == "Category") {
+                    setColumnNamesThis(["Id", "Category"])
                 }
             })
             .catch(error => {
@@ -182,10 +182,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     };
 
     const handleAveragePrice = (e: any) => {
-        if(!e.target.checked) {
-            setIsAveragePrice((prev) => !prev)
-            return
-        }
+        if (e.target.checked) {
         const toAsc = asc ? "ASC" : "DESC";
         axios.get("http://localhost:8080/manager/analytics/averagePricePerCategory?decimalPlaces=2&orderBy=" + "category_name" + "&ascDesc=" + toAsc, {
             headers: {
@@ -194,24 +191,32 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         })
             .then(response => {
                 setIsAveragePrice(true);
-                const data = response.data.map((item: any) => ({
+                setColumnNamesThis(["Id", "Category", "Average Price"])
+                setFilteredRows(response.data.map((item: any) => ({
                     'Id': item.category_number,
                     'Category': item.category_name,
                     'Average Price': item.average_price
-                }));
-                columnNames = ["Id", "Category", "Average Price"]
-                setRows(data);
-                setFilteredRows(data);
+                })));
             })
             .catch(error => {
                 handleLogout();
                 console.log("Error fetching data:", error);
             })
+        }else{
+            setIsAveragePrice(false)
+            setFilteredRows(rows);
+            setColumnNamesThis(["Id", "Category"])
+        }
     }
 
     useEffect(() => {
         console.log("this" + filteredRows);
-      }, [filteredRows]);
+    }, [filteredRows]);
+
+    useEffect(() => {
+        setFilteredRows((prev) => prev)
+        console.log(filteredRows)
+    }, [columnNamesThis]);
 
     // const filteredRowsGet = () => {
     //     if (tableName == "Category" && isAveragePrice) {
@@ -258,6 +263,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         })
             .then(resp => {
                 setRows((prevRows) => prevRows.filter((row) => row["Id"] != id));
+                setFilteredRows((prevRows) => prevRows.filter((row) => row["Id"] != id));
             })
             .catch(error => {
                 handleLogout();
@@ -299,7 +305,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         setSearchText(temporarySearch);
         setFilteredRows(rows.filter(
             (row) =>
-                columnNames.some((columnName) => {
+                columnNamesThis.some((columnName) => {
                     if (columnsToNotSearch.includes(columnName)) { return false };
                     const value = String(row[columnName]).toLowerCase();
                     return value.includes(temporarySearch.toLowerCase());
@@ -353,8 +359,8 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             })
                 .then(response => {
                     console.log(response)
-                    // const data = decodeData(response.data);
-                    // setFilteredRows(data);
+                    const data = decodeData(response.data);
+                    setFilteredRows(data);
                 })
                 .catch(error => {
                     handleLogout();
@@ -406,9 +412,9 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         doc.text(footer, (pageWidth - footerWidth) / 2, doc.internal.pageSize.height - 20);
 
         const tableData = [] as any[];
-        const columnNamesEdited = columnNames;
+        const columnNamesEdited = columnNamesThis;
         if (tableName == "Product in the Store") {
-            columnNamesEdited[columnNames.indexOf("Promotional")] = "UPC Promotional"
+            columnNamesEdited[columnNamesThis.indexOf("Promotional")] = "UPC Promotional"
         }
         rows.forEach(row => {
             const data = columnNamesEdited.map((name) =>
@@ -551,7 +557,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                     <Table striped hover responsive="sm" className='custom-table'>
                         <thead>
                             <tr>
-                                {columnNames.map((columnName) => (
+                                {columnNamesThis.map((columnName) => (
                                     <th key={columnName} className='unselectable' >
                                         {columnName}{' '}
                                         {sortedBy === columnName ? (
@@ -561,6 +567,16 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                         )}
                                     </th>
                                 ))}
+                                {/* {tableName == "Category" && isAveragePrice &&
+                                    <th key="Avergae Price" className='unselectable' >
+                                        "Avergae Price"{' '}
+                                        {sortedBy === "Avergae Price" ? (
+                                            <BsFillCaretUpFill onClick={() => handleSort("Avergae Price")} />
+                                        ) : (
+                                            <BsFillCaretDownFill onClick={() => handleSort("Avergae Price")} />
+                                        )}
+                                    </th>
+                                } */}
                                 <th className='buttons-column'>Actions</th>
                             </tr>
                         </thead>
@@ -571,7 +587,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                     rowData={row}
                                     onDelete={handleDeleteRow}
                                     onEdit={handleEditRow}
-                                    columnNames={columnNames}
+                                    columnNames={columnNamesThis}
                                 />
                             ))}
                         </tbody>
