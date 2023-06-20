@@ -56,7 +56,7 @@ func (repo *PostgresAnalyticsRepository) GetAveragePricePerCategory(decimalPlace
 		FROM category 
 		    LEFT JOIN product ON category.category_number = product.category_number
 		    LEFT JOIN store_product ON product.id_product = store_product.id_product
-		WHERE NOT promotional_product OR product.id_product IS NULL
+		WHERE NOT promotional_product OR store_product.id_product IS NULL
 		GROUP BY category.category_number, category_name`
 
 	// format the query with sorting parameters
