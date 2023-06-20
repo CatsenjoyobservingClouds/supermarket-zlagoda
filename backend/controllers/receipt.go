@@ -57,8 +57,8 @@ func (controller *ReceiptController) CreateReceipt(context *gin.Context) {
 }
 
 func (controller *ReceiptController) GetAllReceipts(context *gin.Context) {
-	receiptsOrderBy := context.DefaultQuery("receiptsOrderBy", "print_date")
-	receiptsAscDesc := context.DefaultQuery("receiptsAscDesc", "DESC")
+	receiptsOrderBy := context.DefaultQuery("orderBy", "print_date")
+	receiptsAscDesc := context.DefaultQuery("ascDesc", "DESC")
 
 	receipts, err := controller.ReceiptRepository.GetAllReceipts(receiptsOrderBy, receiptsAscDesc)
 	if err != nil {
@@ -67,29 +67,14 @@ func (controller *ReceiptController) GetAllReceipts(context *gin.Context) {
 
 		return
 	}
-	//
-	//productsOrderBy := context.DefaultQuery("productsOrderBy", "product_name")
-	//productsAscDesc := context.DefaultQuery("productsAscDesc", "ASC")
-	//
-	//for i, receipt := range receipts {
-	//	receiptProducts, err := controller.ReceiptRepository.GetAllProductsInReceipt(receipt.ReceiptNumber, productsOrderBy, productsAscDesc)
-	//	if err != nil {
-	//		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	//		context.Abort()
-	//
-	//		return
-	//	}
-	//
-	//	receipts[i].Products = receiptProducts
-	//}
 
 	context.JSON(http.StatusOK, receipts)
 }
 
 func (controller *ReceiptController) GetReceipt(context *gin.Context) {
 	receiptNumber := getReceiptNumber(context)
-	productsOrderBy := context.DefaultQuery("productsOrderBy", "UPC")
-	productsAscDesc := context.DefaultQuery("productsAscDesc", "ASC")
+	productsOrderBy := context.DefaultQuery("orderBy", "UPC")
+	productsAscDesc := context.DefaultQuery("ascDesc", "ASC")
 
 	receipt, err := controller.ReceiptRepository.GetReceiptByNumber(receiptNumber)
 	if err != nil {
