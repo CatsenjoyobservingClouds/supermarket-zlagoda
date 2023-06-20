@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Table, Button, InputGroup, FormControl, Modal, Form, Alert } from 'react-bootstrap';
+import { Container, Table, Button, InputGroup, FormControl, Modal, Form, Alert, Col, Row } from 'react-bootstrap';
 import RowComponent, { RowData } from '../components/RowComponent';
 import axios from 'axios';
 import { IIndexable } from '../App';
@@ -27,11 +27,14 @@ const UserInfo: React.FC<UserInfoProps> = ({ onLogout }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [changedUserInfo, setChangedUserInfo] = useState<RowData>({} as RowData);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [changePassword, setChangePassword] = useState(false);
+    const [passwords, setPasswords] = useState<any>({} as any);
+    const [error, setError] = useState<string>("Entered wrong data");
 
 
 
     const alertWrongNewData = wrongNewData === true && (
-        <Alert variant="danger">Entered wrong data</Alert>
+        <Alert variant="danger">{error?.charAt(0).toUpperCase() + error?.slice(1)}</Alert>
     );
 
     const fetchData = () => {
@@ -44,7 +47,12 @@ const UserInfo: React.FC<UserInfoProps> = ({ onLogout }) => {
                 const data = decodeData([response.data])[0]
 
                 setUserInfo(data);
+                console.log(sessionStorage.getItem("jwt"))
                 setChangedUserInfo(data);
+                setPasswords((prev: any) => ({
+                    ...prev,
+                    ["newUsername"]: data["Username"]
+                }))
             })
             .catch(error => {
                 onLogout();
@@ -84,33 +92,47 @@ const UserInfo: React.FC<UserInfoProps> = ({ onLogout }) => {
                 setIsEditing(false);
             })
             .catch(error => {
+                setError(error.response?.data["error"]);
                 setWrongNewData(true);
                 console.log("Error adding new data:", error);
             });
     };
 
+    const handlePasswordsChanges = (e: any) => {
+        setWrongNewData(false);
+        setPasswords((prev: any) => ({
+            ...prev,
+            [e.target.id]: e.target.value,
+        }));
+    }
+
     const handleSaveCredentials = (e: any) => {
-        let encodedRow = {} as IIndexable;
-        try {
-            encodedRow = encodeData([changedUserInfo])[0]
-        } catch {
-            setWrongNewData(true);
-            return;
+        if (changePassword) {
+            if (passwords["oldPassword"] != passwords["oldPassword1"]) {
+                setError("Current passwords do not match");
+                setWrongNewData(true);
+                return;
+            }
         }
 
+        const credentials = Object.fromEntries(Object.entries(passwords).filter(([_, v]) => v != null && v != ""))
 
-        axios.patch("http://localhost:8080/self/", encodedRow,
+
+        axios.patch("http://localhost:8080/self/credentials", credentials,
             {
                 headers: {
                     "Authorization": "Bearer " + localStorage.getItem('jwt')
                 }
             })
             .then(response => {
-                setUserInfo(changedUserInfo)
-                setWrongNewData(false)
+                setChangePassword(false);
+                setWrongNewData(false);
                 setIsEditing(false);
+                fetchData();
+                setShowChangePasswordModal(false);
             })
             .catch(error => {
+                setError(error.response?.data["error"]);
                 setWrongNewData(true);
                 console.log("Error adding new data:", error);
             });
@@ -126,8 +148,13 @@ const UserInfo: React.FC<UserInfoProps> = ({ onLogout }) => {
     };
 
     const handleEditModalClose = () => {
+        setPasswords((prev: any) => ({
+            ["newUsername"]: userInfo["Username"]
+        }));
+        setChangePassword(false);
         setChangedUserInfo(userInfo);
         setShowChangePasswordModal(false);
+        setWrongNewData(false);
     }
 
     const handlePasswordChange = () => {
@@ -145,14 +172,14 @@ const UserInfo: React.FC<UserInfoProps> = ({ onLogout }) => {
 
     if (userInfo["Id"] != null) {
         return (
-            <div className={'content ' + (isEditing ? "mt-36" : "")}>
-                <h1>{localStorage.getItem("role")} {localStorage.getItem("username")}</h1>
-                <Form>
+            <div className={'content ' + (isEditing ? "mt-48 mb-2" : "")}>
+                <h1 className='mb-10'>{localStorage.getItem("role")} {localStorage.getItem("username")}</h1>
+                <Form className={isEditing ? 'info-form' : ""}>
                     {editingColumnNames.map((column) => (
-                        <Form.Group key={column}>
+                        <Form.Group key={column} className='info-group'>
                             {isEditing ? (
                                 <>
-                                    <Form.Label>{(!isEditing || (isRequired[column] == false)) ? "" : "* "}{column}</Form.Label>
+                                    <Form.Label>{(!isEditing || (isRequired[column] == false)) ? "" : "* "}{column} </Form.Label>
                                     <Form.Control
                                         type="text"
                                         name={column}
@@ -171,10 +198,20 @@ const UserInfo: React.FC<UserInfoProps> = ({ onLogout }) => {
                             ) : (
                                 <>
                                     {userInfo[column] != "" ? (
-                                        <>
-                                            <Form.Label>{(!isEditing || (isRequired[column] == false)) ? "" : "* "}{column}</Form.Label>
-                                            <Form.Text>{userInfo[column]}</Form.Text>
-                                        </>)
+                                        <Row>
+                                            <Col className="text-right">
+                                                <Form.Label className="font-semibold text-lg pb-2">
+                                                    {(!isEditing || (isRequired[column] === false)) ? "" : "* "}
+                                                    {column}
+                                                    {': \t'}
+                                                </Form.Label>
+                                            </Col>
+                                            <Col className="text-left">
+                                                <Form.Label className="font-semibold text-lg pb-2">
+                                                    {userInfo[column]}
+                                                </Form.Label>
+                                            </Col>
+                                        </Row>)
                                         : (
                                             null
                                         )}
@@ -184,71 +221,89 @@ const UserInfo: React.FC<UserInfoProps> = ({ onLogout }) => {
                     ))}
                 </Form>
 
-                {alertWrongNewData}
+                {alertWrongNewData && isEditing}
 
                 <div>
-                    <Button variant="primary" onClick={isEditing ? handleSave : handleEdit}>
-                        {isEditing ? 'Save changes' : 'Edit info'}
-                    </Button>{' '}
                     {isEditing ? (
-                        <Button variant="secondary" onClick={() => { setIsEditing(false); setChangedUserInfo(userInfo) }}>
-                            Go Back
-                        </Button>
-                    ) : (
-                        <div>
-                            <Button variant="secondary" onClick={handlePasswordChange}>
-                                Change Account Credentials
+                        <>
+                            <Button variant="primary" onClick={handleSave} className="darker-color mt-1.5 mb-3">
+                                Save changes
+                            </Button>{' '}
+                            <Button variant="secondary" onClick={() => { setIsEditing(false); setChangedUserInfo(userInfo) }} className='mt-2 mb-3'>
+                                Go Back
                             </Button>
-                        </div>
+                        </>
+                    ) : (
+                        <>
+                            <Button variant="primary" onClick={handleEdit} className="darker-color mt-2.5 mb-1">
+                                Edit Info
+                            </Button>{' '}
+                            <div>
+                                <Button variant="secondary" onClick={handlePasswordChange} className='mt-1.5'>
+                                    Change Account Credentials
+                                </Button>
+                            </div>
+                        </>
                     )}
                 </div>
 
-                <Modal show={showChangePasswordModal} onHide={handleEditModalClose}>
+                <Modal show={showChangePasswordModal} onHide={handleEditModalClose} >
                     <Modal.Header closeButton>
                         <Modal.Title>New Account Credentials</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <Form.Group controlId={`formusername`} key="username">
+                        <Form.Group controlId={`newUsername`} key="formusername">
                             <Form.Label>Username</Form.Label>
                             <Form.Control
                                 type="text"
-                                value={changedUserInfo["Username"]}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChangeUsername(e, "Username")}
-                                isInvalid={!changedUserInfo["Username"]}
+                                value={passwords["newUsername"]}
+                                onChange={handlePasswordsChanges}
+                                isInvalid={!passwords["newUsername"]}
                             />
-                            <Button></Button>
-                        </Form.Group>
-                        <Form.Group controlId={`formpassword`} key="password11">
-                            <Form.Label>Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder='Enter current password'
-                            />
-                        </Form.Group>
-                        
-                        <Form.Group controlId={`formpassword`} key="password21">
-                            <Form.Label>Password</Form.Label>
-                            <Form.Control
-                                type="password"
-                                placeholder='Repeat current password'
-                            />
-                        </Form.Group>
-                        <Form.Group controlId={`formpassword`} key="password22">
-                            <Form.Label>Password</Form.Label>
-                            <div className='flex'>
+                            <Form.Group controlId={`oldPassword`} key="formpassword1">
+                                <Form.Label>Password</Form.Label>
                                 <Form.Control
-                                    type={passwordVisible ? 'text' : 'password'}
-                                    placeholder='Enter new password'
+                                    type="password"
+                                    placeholder='Enter current password to change credentials'
+                                    value={passwords["oldPassword"]}
+                                    onChange={handlePasswordsChanges}
                                 />
-                                <Button
-                                    variant="light"
-                                    onClick={togglePasswordVisibility}
-                                    id="password-toggle"
-                                >
-                                    {passwordVisible ? <BsEyeSlash /> : <BsEye />}
-                                </Button>
-                            </div>
+                            </Form.Group>
+                            <Button variant="primary" onClick={(e) => setChangePassword((prev) => !prev)} className='darker-color mb-4'>
+                                Change password
+                            </Button>
                         </Form.Group>
+                        {changePassword &&
+                            <>
+                                <Form.Group controlId={`oldPassword1`} key="formpassword2">
+                                    <Form.Label>Repeat Old Password</Form.Label>
+                                    <Form.Control
+                                        type="password"
+                                        placeholder='Repeat current password'
+                                        value={passwords["oldPassword1"]}
+                                        onChange={handlePasswordsChanges}
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId={`newPassword`} key="formpassword3">
+                                    <Form.Label> New Password</Form.Label>
+                                    <div className='flex'>
+                                        <Form.Control
+                                            type={passwordVisible ? 'text' : 'password'}
+                                            placeholder='Enter new password'
+                                            value={passwords["newPassword"]}
+                                            onChange={handlePasswordsChanges}
+                                        />
+                                        <Button
+                                            variant="light"
+                                            onClick={togglePasswordVisibility}
+                                            id="password-toggle"
+                                        >
+                                            {passwordVisible ? <BsEyeSlash /> : <BsEye />}
+                                        </Button>
+                                    </div>
+                                </Form.Group>
+                            </>
+                        }
                         {/* </>)
                         : null}
                     {columnNames.filter((name) => name != "Id" && name != "Card Number").map((columnName) => (
@@ -261,10 +316,11 @@ const UserInfo: React.FC<UserInfoProps> = ({ onLogout }) => {
                             />
                         </Form.Group> */}
                         {/* ))} */}
+
                     </Modal.Body>
                     {alertWrongNewData}
                     <Modal.Footer>
-                        <Button variant="primary" onClick={handleSaveCredentials}>
+                        <Button variant="success" onClick={handleSaveCredentials}>
                             Save changes
                         </Button>
                         <Button variant="secondary" onClick={handleEditModalClose}>

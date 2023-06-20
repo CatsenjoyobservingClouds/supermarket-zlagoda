@@ -1,16 +1,39 @@
 import React from 'react'
 import DatabaseComponent from '../components/DatabaseComponent';
+import axios from 'axios';
+
+export async function getAllItemsForDropListCategories() {
+    try {
+      const response = await axios.get("http://localhost:8080/manager/category" + "/", {
+        headers: {
+          "Authorization": "Bearer " + localStorage.getItem('jwt')
+        }
+      });
+      const data = response.data;
+      const chosenData = data.map((item: any) => ({
+        'Category Id': item.category_number,
+        'Category': item.category_name
+      })) as any[];
+      console.log(chosenData);
+      return chosenData;
+    } catch (error) {
+      localStorage.setItem("role", "");
+      console.log("Error fetching data:", error);
+      return [] as any[];
+    }
+  }
 
 export default function Products() {
     const rowData = {};
-    const columnNames = ['Name', 'Category', 'Characteristics'];
+    const columnNames = ['Id', 'Product', 'Category', 'Characteristics'];
+    const columnNamesChange = ['Product', 'Category', 'Characteristics'];
     const tableName= "Product";
     const endpoint = "http://localhost:8080/manager/product";
 
     const decodeData = (data: any[]) => {
         const chosenData = data.map((item) => ({
             'Id': item.id_product,
-            'Name': item.product_name,
+            'Product': item.product_name,
             'Category Id': item.category_number,
             'Category': item.category_name,
             'Characteristics': item.characteristics
@@ -22,11 +45,13 @@ export default function Products() {
         const chosenData = data.map((item) => ({
             "id_product": item["Id"],
             "category_number": parseInt(item["Category Id"]),
-            "product_name": item["Name"],
+            "product_name": item["Product"],
             "characteristics": item["Characteristics"]
         }));
         return chosenData;
     }
+
+    
 
     return (
         <main>
@@ -35,7 +60,7 @@ export default function Products() {
                 decodeData={decodeData}
                 encodeData={encodeData}
                 columnNames={columnNames}
-                columnNamesChange={columnNames}
+                columnNamesChange={columnNamesChange}
                 tableName={tableName} />
         </main>
     )

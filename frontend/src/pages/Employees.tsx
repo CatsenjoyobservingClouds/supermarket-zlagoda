@@ -11,7 +11,7 @@ export const decodeData = (data: any[]) => {
         'Surname': item.empl_surname, 
         'Patronymic': item.empl_patronymic["String"],
         'Role': item.empl_role,
-        'Salary': parseInt(item.salary),
+        'Salary, UAH': parseFloat(item.salary).toLocaleString(),
         'Date of Birth': new Date(item.date_of_birth).toLocaleDateString(),
         'Start Working Date': new Date(item.date_of_start).toLocaleDateString(),
         'Phone Number': item.phone_number,
@@ -33,7 +33,7 @@ export const encodeData = (data: any[]) => {
             "Valid" : (item["Patronymic"] ? true : false)
         },
         "empl_role": item["Role"],
-        "salary": parseFloat(item["Salary"]),
+        "salary": parseFloat(item["Salary, UAH"].replace(/\s/g, "")),
         "date_of_birth": parse(item["Date of Birth"], 'dd.MM.yyyy', new Date()).toISOString(),
         "date_of_start":parse(item["Start Working Date"], 'dd.MM.yyyy', new Date()).toISOString(),
         "phone_number": item["Phone Number"],
@@ -47,10 +47,10 @@ export const encodeData = (data: any[]) => {
     return chosenData;
 }
 
-export const columnNames = ['Id', 'Username', 'Full Name', 'Role', 'Salary', 'Date of Birth', 'Start Working Date', 'Phone Number', 'City', 'Street', 'Zip Code'];
+export const columnNames = ['Id', 'Username', 'Full Name', 'Role', 'Salary, UAH', 'Date of Birth', 'Start Working Date', 'Phone Number', 'City', 'Street', 'Zip Code'];
 
 export default function Employees() {
-    const columnNamesChange = ['Name', 'Surname', 'Patronymic', 'Role', 'Salary', 'Date of Birth', 'Start Working Date', 'Phone Number', 'City', 'Street', 'Zip Code'];
+    const columnNamesChange = ['Name', 'Surname', 'Patronymic', 'Role', 'Salary, UAH', 'Date of Birth', 'Start Working Date', 'Phone Number', 'City', 'Street', 'Zip Code'];
     
     const endpoint = "http://localhost:8080/manager/employee";
     const tableName = "Employee";

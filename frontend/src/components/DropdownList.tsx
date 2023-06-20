@@ -1,53 +1,63 @@
 import React, { useState } from 'react';
-import { Dropdown, FormControl, ListGroup } from 'react-bootstrap';
+import { Dropdown, FormControl, ListGroup, DropdownButton } from 'react-bootstrap';
+import Select, { GroupBase } from 'react-select';
+import { getAllItemsForDropListCategories } from '../pages/Products';
+import { getAllItemsForDropListProducts } from '../pages/StoreProducts';
 
-const DropdownList = (passChosenOption: any, items: any[]) => {
-  const [searchValue, setSearchValue] = useState('');
-  const [selectedItem, setSelectedItem] = useState('');
+interface DropListComponentProps {
+  passChosenOption: any;
+  columnName: string;
+  defaultValue?: any;
+  multiValue?: boolean
+}
 
+const DropdownList: React.FC<DropListComponentProps> = ({ passChosenOption, columnName, defaultValue, multiValue }) => {
+  const [defaultItem, setDefaultItem] = useState(defaultValue);
+  const [values, setValues] = useState<any[]>([]);
 
-  // Filter items based on search value
-  const filteredItems = items.filter(item =>
-    item.toLowerCase().includes(searchValue.toLowerCase())
-  );
+  const loadValues = async () => {
+    let items = [] as any[];
+    if (columnName === "Product") {
+      try {
+        items = await getAllItemsForDropListProducts();
+      } catch (error) {
+        console.log(error)
+      }
+    } else {
+      try {
+        items = await getAllItemsForDropListCategories();
+      } catch (error) {
+        console.log(error)
+      }
+    }
 
-  // Handle item selection
-  const handleItemSelect = (item: any) => {
-    setSelectedItem(item);
-    passChosenOption(item);
+    const values = items?.map((item: any) => ({
+      'label': item[columnName],
+      'value': item[columnName + " Id"]
+    }));
+    setValues(values);
   };
 
-  // Handle search input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
-  };
 
-  return (
-    <Dropdown>
-      <Dropdown.Toggle variant="primary" id="dropdown-list">
-        {selectedItem ? selectedItem : 'Select Item'}
-      </Dropdown.Toggle>
-      <Dropdown.Menu style={{ maxHeight: '200px', overflowY: 'auto' }}>
-        <FormControl
-          type="text"
-          placeholder="Search"
-          value={searchValue}
-          onChange={handleSearchChange}
-        />
-        <ListGroup>
-          {filteredItems.map(item => (
-            <ListGroup.Item
-              key={item}
-              active={item === selectedItem}
-              onClick={() => handleItemSelect(item)}
-            >
-              {item}
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      </Dropdown.Menu>
-    </Dropdown>
-  );
+  if (values.length != 0) {
+    return (
+      <Select
+        className={multiValue ? '' : 'mb-3'}
+        isMulti={multiValue}
+        options={values}
+        placeholder={defaultValue}
+        onChange={opt => passChosenOption(opt, columnName)}
+        key={columnName + "select"}
+        isClearable={true}
+        isSearchable={true}
+        maxMenuHeight={160}
+      />
+    )
+  } else {
+    loadValues();
+    return null;
+  }
 };
+
 
 export default DropdownList;

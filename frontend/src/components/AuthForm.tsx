@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Container, Form, Button, Alert } from 'react-bootstrap';
 import axios from 'axios'
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import '../css-files/AuthForm.css'; // Custom CSS file for additional styling
 import { BsEyeSlash, BsEye } from 'react-icons/bs';
 
@@ -12,7 +12,7 @@ export type AuthFormProps = {
 };
 
 const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [areSubmittedWrongCredentials, setAreSubmittedWrongCredentials] = useState<Boolean | null>(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -30,7 +30,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
         const token = response.data.token;
         console.log(token)
         onLogin(token);
-        navigate("/")
+        // navigate("/")
         setAreSubmittedWrongCredentials(false);
       })
       .catch(error => {

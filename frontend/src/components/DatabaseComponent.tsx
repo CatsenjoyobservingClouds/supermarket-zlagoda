@@ -10,6 +10,7 @@ import autoTable from "jspdf-autotable";
 import jsPDF from 'jspdf';
 import Report from '../pages/Report';
 import DatePickerInput from './DatePicker';
+import DropdownList from './DropdownList';
 
 
 
@@ -30,11 +31,17 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     const [editMode, setEditMode] = useState(false);
     const [editedRow, setEditedRow] = useState<RowData>({} as RowData);
     const [wrongNewData, setWrongNewData] = useState<boolean>(false);
+    const [error, setError] = useState<string>("Entered wrong data");
     const [temporarySearch, setTemporarySearch] = useState('');
+    const [listItems, setListItems] = useState();
+    const [filteredRows, setFilteredRows] = useState<RowData[]>(rows);
+    const [dataWithAveragePrice, setDataWithAveragePrice] = useState<RowData[]>([]);
+    const [isAveragePrice, setIsAveragePrice] = useState<boolean>(false);
+    const [asc, setAsc] = useState<boolean>(true);
 
 
     const alertWrongNewData = wrongNewData === true && (
-        <Alert variant="danger">Entered wrong data</Alert>
+        <Alert variant="danger">{error?.charAt(0).toUpperCase() + error?.slice(1)}</Alert>
     );
 
     const handleEditModalShow = () => {
@@ -56,6 +63,14 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         }));
     };
 
+    const handleChangeCheckBox = (e: any, key: string) => {
+        setWrongNewData(false)
+        setEditedRow((prevData) => ({
+            ...prevData,
+            [key]: e.target.checked,
+        }));
+    };
+
     const handleDateChange = (date: Date, key: string) => {
         setWrongNewData(false)
         setEditedRow((prevData) => ({
@@ -64,12 +79,25 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         }));
     };
 
+    const handleChoseFromList = (opt: any, columnName: string) => {
+        setWrongNewData(false)
+        // editedRow[columnName] = opt.label;
+        // editedRow[columnName + " Id"] = opt.value;
+        setEditedRow((prevData) => ({
+            ...prevData,
+            [columnName]: opt?.label,
+            [columnName + " Id"]: opt?.value,
+        }));
+    };
+
     const handleSave = () => {
         let encodedRow = {} as IIndexable;
         try {
             encodedRow = encodeData([editedRow])[0]
-            encodedRow = Object.fromEntries(Object.entries(encodedRow).filter(([_, v]) => v!= null && v!=""))
+            encodedRow = Object.fromEntries(Object.entries(encodedRow).filter(([_, v]) => v != null && v != ""))
         } catch {
+
+            setError("Entered wrong data");
             setWrongNewData(true);
             return;
         }
@@ -88,17 +116,23 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             })
             .catch(error => {
                 console.log(encodedRow)
+                if (error.response.status == 401) handleLogout()
+
+                setError(error.response?.data["error"]);
                 setWrongNewData(true);
                 console.log("Error adding new data:", error);
             })
     };
 
     const handleUpdate = () => {
+        console.log(editedRow)
         let encodedRow = {} as IIndexable;
         try {
             encodedRow = encodeData([editedRow])[0]
         } catch {
-            window.alert('Wrong date!');
+
+            setError("Entered wrong data");
+            setWrongNewData(true);
             return;
         }
 
@@ -113,9 +147,12 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 setShowEditModal(false);
                 setWrongNewData(false);
                 setRows(rows.filter((row) => (row["Id"] != editedRow["Id"])))
+                setFilteredRows(rows.filter((row) => (row["Id"] != editedRow["Id"])))
                 fetchAllData();
             })
             .catch(error => {
+                if (error.response.status == 401) handleLogout()
+                setError(error.response?.data["error"])
                 console.log(encodedRow)
                 setWrongNewData(true);
                 console.log("Error editing data:", error);
@@ -129,15 +166,62 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             }
         })
             .then(response => {
-                const data = response.data;
-                setRows(decodeData(data));
-                // filteredRows();
+                const data = decodeData(response.data);
+                setRows(data);
+                setFilteredRows(data);
             })
             .catch(error => {
                 handleLogout();
                 console.log("Error fetching data:", error);
             })
     };
+
+    const handleGetAveragePrice = () => {
+        const toAsc = asc ? "ASC" : "DESC";
+        axios.get("http://localhost:8080/manager/analytics/averagePricePerCategory?decimalPlaces=2&orderBy=" + sortedBy + "&ascDesc=" + asc, {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem('jwt')
+            }
+        })
+            .then(response => {
+                const data = response.data.map((item: any) => ({
+                    'Id': item.category_number,
+                    'Category': item.category_name,
+                    'Average Price': item.average_price
+                }));
+                setDataWithAveragePrice(data)
+                return data;
+            })
+            .catch(error => {
+                handleLogout();
+                console.log("Error fetching data:", error);
+            })
+        return filteredRows
+    }
+
+    const filteredRowsGet = () => {
+        if (tableName == "Category" && isAveragePrice) {
+            if (dataWithAveragePrice.length != 0) {
+                return dataWithAveragePrice
+            } else {
+                return handleGetAveragePrice();
+            }
+        }
+
+        if(sortedBy !== ""){
+            handleSort(sortedBy);
+        }
+
+        return filteredRows
+        
+        //     filteredRows.filter(
+        //     (row) =>
+        //         columnNames.some((columnName) => {
+        //             const value = String(row[columnName]).toLowerCase();
+        //             return value.includes(searchText.toLowerCase());
+        //         })
+        // );
+    }
 
 
     const handleEditRow = (id: any, newData: RowData) => {
@@ -162,6 +246,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 setRows((prevRows) => prevRows.filter((row) => row["Id"] != id));
             })
             .catch(error => {
+                handleLogout();
                 console.log("Error deleting data:", error);
             })
     };
@@ -179,15 +264,15 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
 
     const handleSort = (key: string) => {
         if (sortedBy === key) {
-            // Reverse the sorting direction
-            setRows((prevRows) => [...prevRows].reverse());
+            setAsc((prev) => !prev)
+            setFilteredRows((prevRows) => [...prevRows].reverse());
         } else {
             if ((key == "Id" && tableName == "Employee") || (key == "Card Number" && tableName == "Customer")) {
-                setRows((prevRows) =>
+                setFilteredRows((prevRows) =>
                     [...prevRows].sort((a, b) => (parseInt(a[key].substring(5), 10) > parseInt(b[key].substring(5), 10) ? 1 : -1))
                 )
             } else {
-                setRows((prevRows) =>
+                setFilteredRows((prevRows) =>
                     [...prevRows].sort((a, b) => (parseInt(a[key]) > parseInt(b[key]) ? 1 : -1))
                 );
             }
@@ -195,21 +280,97 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         setSortedBy(key);
     };
 
+    const columnsToNotSearch = ["Street", "Zip Code", "City", "Product Info", "Characteristics", "Role"]
     const handleSearch = (e: any) => {
         setSearchText(temporarySearch);
+        setFilteredRows(rows.filter(
+            (row) =>
+                columnNames.some((columnName) => {
+                    if (columnsToNotSearch.includes(columnName)) { return false };
+                    const value = String(row[columnName]).toLowerCase();
+                    return value.includes(temporarySearch.toLowerCase());
+                })
+        ))
     };
 
-    const handleChangeSearchText = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setTemporarySearch(e.target.value);
+    const filterByRole = (e: any) => {
+        if (e.target.id == "All") {
+            setFilteredRows(rows)
+        } else {
+            setFilteredRows(rows.filter(
+                (row) => (row["Role"].includes(e.target.id))
+            ))
+        }
     };
 
-    const filteredRows = rows.filter(
-        (row) =>
-            columnNames.some((columnName) => {
-                const value = String(row[columnName]).toLowerCase();
-                return value.includes(searchText.toLowerCase());
+    const filterByPromote = (e: any) => {
+        if (e.target.id == "All") {
+            setFilteredRows(rows)
+        } else {
+            if (e.target.id == "Promotional") {
+                setFilteredRows(rows.filter(
+                    (row) => (row["Promotional"] == true)
+                ))
+            } else {
+                setFilteredRows(rows.filter(
+                    (row) => (row["Promotional"] == false)
+                ))
+            }
+        }
+    };
+
+    const filterByCategory = (opt: any, columnName: any) => {
+        if (opt?.length == 0) {
+            setFilteredRows(rows)
+            return
+        }
+        const categories = opt.map((item: any) => item.label) as any[];
+        setFilteredRows(rows.filter(
+            (row) => (categories.includes(row["Category"]))
+        ))
+    };
+
+    const soldEveryProduct = (e: any) => {
+        if (e.target.checked) {
+            axios.get("http://localhost:8080/manager/analytics/cashiersWhoHaveSoldEveryProductInTheStore", {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem('jwt')
+                }
             })
-    );
+                .then(response => {
+                    console.log(response)
+                    // const data = decodeData(response.data);
+                    // setFilteredRows(data);
+                })
+                .catch(error => {
+                    handleLogout();
+                    console.log("Error fetching data:", error);
+                })
+        } else {
+            setFilteredRows(rows);
+        }
+    };
+
+    const servedByEveryCashier = (e: any) => {
+        if (e.target.checked) {
+            axios.get("http://localhost:8080/manager/analytics/registeredCustomersWhoHaveBeenServedByEveryCashier", {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem('jwt')
+                }
+            })
+                .then(response => {
+                    const data = decodeData(response.data);
+                    setFilteredRows(data);
+                })
+                .catch(error => {
+                    handleLogout();
+                    console.log("Error fetching data:", error);
+                })
+        } else {
+            setFilteredRows(rows);
+        }
+    };
+
 
     const generatePdf = () => {
         const unit = "pt";
@@ -268,12 +429,26 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                         <FormControl
                             placeholder="Search"
                             value={temporarySearch}
-                            onChange={handleChangeSearchText}
+                            onChange={(e: any) => setTemporarySearch(e.target.value)}
                         />
                         <Button variant="info" size="lg" className="d-flex align-items-center" id='search-button'
-                            onClick={handleSearch}>
+                            onClick={(e) => handleSearch(e)}>
                             <BsSearch />
                         </Button>
+                        {tableName == "Product" &&
+                            <DropdownList key={"Category" + "-dropdown"}
+                                passChosenOption={filterByCategory}
+                                columnName={"Category"}
+                                multiValue={true}
+                                defaultValue={"Pick Categories"}
+                            />
+                        }
+                        {/* {tableName == "Category" &&
+
+                            <Button variant="primary" onClick={handleAveragePrice}>
+                                Category Average Price
+                            </Button>
+                        } */}
                         {(tableName != "Receipt" && localStorage.getItem("role")) != "Manager" ||
                             <Button variant="success" onClick={(e) => handleEditModalShow()}>
                                 Add {tableName}
@@ -286,8 +461,79 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             <StarButton />
                         )}
                     </InputGroup>
+                    {tableName == "Employee" ?
+                        (<div className='flex'>
+                            <Form>
+                                <Form.Check
+                                    inline
+                                    defaultChecked
+                                    label="All"
+                                    type="radio"
+                                    name="optradio"
+                                    id="All"
+                                    onChange={(e: any) => filterByRole(e)}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Cashiers"
+                                    type="radio"
+                                    name="optradio"
+                                    id="Cashier"
+                                    onChange={(e: any) => filterByRole(e)}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Managers"
+                                    type="radio"
+                                    name="optradio"
+                                    id="Manager"
+                                    onChange={(e: any) => filterByRole(e)}
+                                />
+                            </Form>
+                            <Form.Check inline label="Sold Every Product" type="checkbox" value="" onChange={(e: any) => soldEveryProduct(e)} className="ml-12 rounded-none" />
+                        </div>) : (null)
+                    }
+                    {tableName == "Product in the Store" ?
+                        (<Form>
+                            <Form.Check
+                                inline
+                                defaultChecked
+                                label="All"
+                                type="radio"
+                                name="optradio"
+                                id="All"
+                                onChange={(e: any) => filterByPromote(e)}
+                            />
+                            <Form.Check
+                                inline
+                                label="Promotional"
+                                type="radio"
+                                name="optradio"
+                                id="Promotional"
+                                onChange={(e: any) => filterByPromote(e)}
+                            />
+                            <Form.Check
+                                inline
+                                label="Not Promotional"
+                                type="radio"
+                                name="optradio"
+                                id="Not_Promotional"
+                                onChange={(e: any) => filterByPromote(e)}
+                            />
+                        </Form>) : (null)
+                    }
+                    {tableName == "Customer" &&
+                        <div>
+                            <Form.Check inline label="Served by Every Cashier" type="checkbox" value="" onChange={(e: any) => servedByEveryCashier(e)} className="ml-2 rounded-none" />
+                        </div>
+                    }
+                    {tableName == "Category" &&
+                        <div>
+                            <Form.Check inline label="Category Average Price" type="checkbox" value="ksk" onChange={(e: any) => setIsAveragePrice(e.target.checked)} className="ml-2 rounded-none" />
+                        </div>
+                    }
                 </div>
-                <div className='table-wrapper'>
+                <div className='table-wrapper mt-6'>
                     <Table striped hover responsive="sm" className='custom-table'>
                         <thead>
                             <tr>
@@ -305,7 +551,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredRows.map((row) => (
+                            {filteredRowsGet().map((row) => (
                                 <RowComponent
                                     key={row.Id}
                                     rowData={row}
@@ -331,15 +577,45 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                 <DatePickerInput handleDateChange={handleDateChange} columnName={columnName} selectedDate={editedRow[columnName]} />
                             </Form.Group>
                         ) : (
-                            <Form.Group controlId={`form${columnName}`} key={columnName}>
-                                <Form.Label>{columnName}</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={editedRow[columnName]}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, columnName)}
-                                />
-                            </Form.Group>
-                        )))}
+                            (columnName == "Category" && tableName == "Product") ? (
+                                <Form.Group controlId={`form${columnName}`} key={columnName}>
+                                    <Form.Label>{columnName}</Form.Label>
+                                    <DropdownList key={columnName + "-dropdown"}
+                                        passChosenOption={handleChoseFromList}
+                                        columnName={columnName}
+                                        defaultValue={editedRow[columnName]} />
+                                </Form.Group>
+                            ) : (columnName == "Product" && tableName == "Product in the Store") ? (
+                                <Form.Group controlId={`form${columnName}`} key={columnName}>
+                                    <Form.Label>{columnName}</Form.Label>
+                                    <DropdownList key={columnName + "-dropdown"}
+                                        passChosenOption={handleChoseFromList}
+                                        columnName={columnName}
+                                        defaultValue={editedRow[columnName]} />
+                                </Form.Group>
+                            ) : (columnName == "Promotional") ? (
+                                <Form.Group className='mt-4'>
+                                    <Form.Label>Is this product promotional?</Form.Label>
+                                    <div className="d-flex align-items-center justify-start">
+                                        <input
+                                            className="w-12 h-6 mb-4 mt-1"
+                                            type="checkbox"
+                                            value={editedRow[columnName]}
+                                            checked={editedRow[columnName]}
+                                            onChange={(e: any) => handleChangeCheckBox(e, columnName)}
+                                        />
+                                    </div>
+                                </Form.Group>
+                            ) : (
+                                <Form.Group controlId={`form${columnName}`} key={columnName}>
+                                    <Form.Label>{columnName}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={editedRow[columnName]}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e, columnName)}
+                                    />
+                                </Form.Group>
+                            ))))}
 
                     {tableName == "Employee" && !editMode ? (
                         <>

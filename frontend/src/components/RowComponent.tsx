@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button} from 'react-bootstrap';
 import '../css-files/RowComponent.css';
 import { ReceiptButton } from '../components/Buttons';
 
@@ -22,15 +22,25 @@ const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, 
   if (row) return (
     <tr className='centered-input-text'>
       {columnNames.map((columnName) => (
-        <td key={columnName} className='unselectable'>
-          <input
-            readOnly
-            type="text"
-            value={row[columnName]}
-            maxLength={100}
-            size={rowData["Username"] != null || rowData["Card Number"] != null  ? (row[columnName] ? (row[columnName].toString().length) : 1) : null}
-          />
-        </td>
+        (columnName != "Promotional" ? (
+          <td key={columnName} className='unselectable'>
+            <input
+              className={columnName=="Product"|| columnName=="Characteristics" || columnName=="Product Info" ? "w-full" : "" }
+              readOnly
+              type="text"
+              value={row[columnName]}
+              size={columnName == "Characteristics" || columnName == "Product" || (columnName == "Name" && rowData["Username"] != null) ? null : (row[columnName] ? (row[columnName].toString().length) : 1)}
+            />
+          </td>) :
+          (<td key={columnName} className='unselectable' >
+            <input
+              className="w-9 h-4 mr-2"
+              readOnly
+              type="checkbox"
+              value={row[columnName]}
+              checked={row[columnName]}
+            />
+          </td>))
       ))}
 
       <td className='unselectable buttons-column d-flex align-middle justify-center'>

@@ -11,7 +11,9 @@ import '../css-files/DatabaseComponent.css';
 //продавщики маю мати змогу робити  усе
 
 const Receipts = () => {
-    const columnNames = ['Receipt', 'Employee', 'Customer', 'Card Number', 'Print Date', 'Total Sum', 'VAT'];
+    const columnNames = ['Receipt', 'Employee', 'Customer', 'Card Number', 'Print Date', 'Total Sum, UAH', 'VAT, UAH'];
+    const columnNamesChanges = ['Receipt', 'Employee', 'Customer', 'Card Number', 'Print Date'];
+
     const tableName = "Receipt";
     const endpoint = "http://localhost:8080/" + localStorage.getItem("role")?.toLowerCase() +"/check";
 
@@ -23,8 +25,8 @@ const Receipts = () => {
             'Customer': item.cust_surname["String"] + " " + item.cust_name["String"][0] +  ". " +(item.cust_patronymic["Valid"] ? (item.cust_patronymic["String"][0] + ".") : ""),
             'Card Number': item.card_number["String"],
             'Print Date': new Date(item.print_date).toLocaleString(),
-            'Total Sum': item.sum_total + " UAH",
-            'VAT': item.vat + " UAH"
+            'Total Sum, UAH': item.sum_total.toFixed(2),
+            'VAT, UAH': item.vat.toFixed(2)
         }));
         return chosenData;
     }
@@ -38,8 +40,8 @@ const Receipts = () => {
                 "Valid": (item["Card Number"] ? true : false)
             },
             "print_date": new Date(item["Print Date"]).toISOString(),
-            "sum_total": item["Total Sum"],
-            "vat": item["VAT"]
+            "sum_total": item["Total Sum, UAH"],
+            "vat": item["VAT, UAH"]
         }));
         return chosenData;
     }
