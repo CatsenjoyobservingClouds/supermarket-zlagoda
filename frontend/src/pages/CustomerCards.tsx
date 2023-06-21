@@ -6,7 +6,7 @@ export default function CustomerCards() {
     const columnNamesChange = ['Name', 'Surname', 'Patronymic', 'Phone Number', 'City', 'Street', 'Zip Code', 'Discount Percent'];
 
     const tableName= "Customer";
-    const endpoint = "http://localhost:8080/manager/customerCard";
+    const endpoint = "http://localhost:8080/" + localStorage.getItem("role")?.toLowerCase() + "/customerCard";
 
     const decodeData = (data: any[]) => {
         const chosenData = data.map((item) => ({

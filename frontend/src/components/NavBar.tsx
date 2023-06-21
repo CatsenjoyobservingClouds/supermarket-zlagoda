@@ -42,9 +42,9 @@ export const NavBar = () => {
                                 <>
                                     <Navbar.Collapse id="basic-navbar-nav">
                                         <Nav className="m-auto">
-                                            <Nav.Link href='/employees'>Employees</Nav.Link>
                                             <Nav.Link href='/customer-cards'>Customer Cards</Nav.Link>
-                                            <Nav.Link href='/products'>Products</Nav.Link>                                        <Nav.Link href='/products-in-the-store'>Products in the Store</Nav.Link>
+                                            <Nav.Link href='/categories'>Categories</Nav.Link>
+                                            <Nav.Link href='/products'>Products</Nav.Link>
                                             <Nav.Link href='/products-in-the-store'>Products in the Store</Nav.Link>
                                             <Nav.Link href='/receipts'>Receipts</Nav.Link>
                                         </Nav>

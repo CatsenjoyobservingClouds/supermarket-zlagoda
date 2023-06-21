@@ -13,6 +13,7 @@ import Checks from './pages/Receipts';
 import Home from './pages/Home';
 import jwt from 'jwt-decode';
 import UserInfo from './pages/UserInfo';
+import SumAllByCategory from './pages/SumAllByCategory';
 
 
 interface ProtectedRouteProps {
@@ -49,8 +50,8 @@ const userRoles: UserRoles = {
     products_in_the_store: true,
   },
   Cashier: {
-    categories: false,
-    employees: true,
+    categories: true,
+    employees: false,
     products: true,
     receipts: true,
     sales: false,
@@ -110,6 +111,7 @@ function App() {
 
           <Route path='/login' element={localStorage.getItem("role") ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} />
           <Route path='/user-info' element={localStorage.getItem("role") ? <UserInfo onLogout={handleLogout} /> : <Navigate to="/" />} />
+          <Route path='/units-sold-by-category' element={localStorage.getItem("role") == "Manager" ? <SumAllByCategory /> : <Navigate to="/" />} />
           <Route path='/employees' element={hasAccess("/employees") ? <Employees /> : <Navigate to="/" />} />
           <Route path='/products' element={hasAccess("/products") ? <Products /> : <Navigate to="/" />} />
           <Route path='/receipts' element={hasAccess("/receipts") ? <Checks /> : <Navigate to="/" />} />

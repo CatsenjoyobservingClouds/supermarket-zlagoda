@@ -8,10 +8,11 @@ import { IIndexable } from '../App';
 import '../css-files/DatabaseComponent.css';
 import autoTable from "jspdf-autotable";
 import jsPDF from 'jspdf';
+import { useNavigate } from 'react-router';
 import Report from '../pages/Report';
 import DatePickerInput from './DatePicker';
 import DropdownList from './DropdownList';
-import { AnyNsRecord } from 'dns';
+import { decodeData2 } from '../pages/Categories'
 
 
 
@@ -39,11 +40,13 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     // const [dataWithAveragePrice, setDataWithAveragePrice] = useState<RowData[]>([]);
     const [isAveragePrice, setIsAveragePrice] = useState<boolean>(false);
     const [asc, setAsc] = useState<boolean>(true);
+    const [columnNamesThis, setColumnNamesThis] = useState(columnNames);
 
 
     const alertWrongNewData = wrongNewData === true && (
         <Alert variant="danger">{error?.charAt(0).toUpperCase() + error?.slice(1)}</Alert>
     );
+    const navigate = useNavigate();
 
     const handleEditModalShow = () => {
         setShowEditModal(true);
@@ -160,58 +163,80 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             })
     }
 
-    const fetchAllData = () => {
-        axios.get(endpoint + "/", {
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem('jwt')
-            }
-        })
-            .then(response => {
-                const data = decodeData(response.data);
-                setRows(data);
-                setFilteredRows(data);
-                setIsAveragePrice(false);
-                if(tableName=="Category") {
-                    columnNames = ["Id", "Category"]
+    const fetchAllData = async () => {
+        if (tableName == "Category" && localStorage.getItem("role")?.toLowerCase() == "manager") {
+            handleAveragePrice();
+        } else {
+            axios.get(endpoint + "/", {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem('jwt')
                 }
             })
-            .catch(error => {
-                handleLogout();
-                console.log("Error fetching data:", error);
-            })
+                .then(response => {
+                    if (tableName == "Category") setColumnNamesThis(["Id", "Category"])
+                    const data = decodeData(response.data);
+                    setRows(data);
+                    setFilteredRows(data);
+                    // setIsAveragePrice(false);
+                    // if (tableName == "Category") {
+                    //     setColumnNamesThis(["Id", "Category"])
+                    // }
+                })
+                .catch(error => {
+                    handleLogout();
+                    console.log("Error fetching data:", error);
+                })
+        }
+        // }
     };
 
-    const handleAveragePrice = (e: any) => {
-        if(!e.target.checked) {
-            setIsAveragePrice((prev) => !prev)
-            return
-        }
-        const toAsc = asc ? "ASC" : "DESC";
-        axios.get("http://localhost:8080/manager/analytics/averagePricePerCategory?decimalPlaces=2&orderBy=" + "category_name" + "&ascDesc=" + toAsc, {
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem('jwt')
-            }
-        })
-            .then(response => {
-                setIsAveragePrice(true);
-                const data = response.data.map((item: any) => ({
-                    'Id': item.category_number,
-                    'Category': item.category_name,
-                    'Average Price': item.average_price
-                }));
-                columnNames = ["Id", "Category", "Average Price"];
-                setRows(data);
-                setFilteredRows(data);
-            })
-            .catch(error => {
-                handleLogout();
-                console.log("Error fetching data:", error);
-            })
-    }
+    // const handlePrice = async (e: any) => {
+    //     if (e.target.checked) {
+    //         await handleAveragePrice(asc).then(response => {
+    //             const data = response?.data?.map((item: any) => ({
+    //                 'Id': item.category_number,
+    //                 'Category': item.category_name,
+    //                 'Average Price': item.average_price
+    //             }))
+    //             setIsAveragePrice(true);
+    //             setColumnNamesThis(["Id", "Category", "Average Price"])
+    //             setFilteredRows((prev) => {
+    //                 const updatedRows = [...prev];
+    //                 updatedRows.forEach((row, index) => {
+    //                     row["Average Price"] = data?.[index]?.["Average Price"]
+    //                 });
+    //                 return updatedRows;
+    //             });
+    //         })
+    //             .catch(error => {
+    //                 console.log("Error fetching data:", error);
+    //             })
+    //     } else {
+    //         setIsAveragePrice(false)
+    //         setFilteredRows(rows);
+    //         setColumnNamesThis(["Id", "Category"])
+    //     }
+    //     setFilteredRows((prev) => prev)
+    //     // fetchAllData();
+    // }
 
-    useEffect(() => {
-        console.log("this" + filteredRows);
-      }, [filteredRows]);
+
+
+    // useEffect(() => {
+    //     console.log("filteredRows:", filteredRows);
+    //     // setFilteredRows((prevRows) => {
+    //     //     const updatedRows = [...prevRows];
+    //     //     updatedRows.forEach((row) => {
+    //     //         "Average Price"
+    //     //     });
+    //     //     return updatedRows;
+    //     // });
+    // }, [filteredRows]);
+
+
+
+
+
 
     // const filteredRowsGet = () => {
     //     if (tableName == "Category" && isAveragePrice) {
@@ -258,6 +283,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         })
             .then(resp => {
                 setRows((prevRows) => prevRows.filter((row) => row["Id"] != id));
+                setFilteredRows((prevRows) => prevRows.filter((row) => row["Id"] != id));
             })
             .catch(error => {
                 handleLogout();
@@ -276,6 +302,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     //     setRows((prevRows) => [...prevRows, newRow]);
     // };
 
+    const sortAsNumber = ["Salary, UAH", "Discount Percent", "Average Price", "Id", "Selling Price, UAH", "Amount", "UPC", "Phone Number"]
     const handleSort = (key: string) => {
         if (sortedBy === key) {
             setAsc((prev) => !prev)
@@ -285,9 +312,13 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 setFilteredRows((prevRows) =>
                     [...prevRows].sort((a, b) => (parseInt(a[key].substring(5), 10) > parseInt(b[key].substring(5), 10) ? 1 : -1))
                 )
+            } else if (sortAsNumber.includes(key)) {
+                setFilteredRows((prevRows) =>
+                    [...prevRows].sort((a, b) => (parseFloat(a[key]) > parseFloat(b[key]) ? 1 : -1))
+                )
             } else {
                 setFilteredRows((prevRows) =>
-                    [...prevRows].sort((a, b) => (parseInt(a[key]) > parseInt(b[key]) ? 1 : -1))
+                    [...prevRows].sort((a, b) => ((a[key] > b[key]) ? 1 : -1))
                 );
             }
         }
@@ -299,7 +330,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         setSearchText(temporarySearch);
         setFilteredRows(rows.filter(
             (row) =>
-                columnNames.some((columnName) => {
+                columnNamesThis.some((columnName) => {
                     if (columnsToNotSearch.includes(columnName)) { return false };
                     const value = String(row[columnName]).toLowerCase();
                     return value.includes(temporarySearch.toLowerCase());
@@ -353,8 +384,8 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
             })
                 .then(response => {
                     console.log(response)
-                    // const data = decodeData(response.data);
-                    // setFilteredRows(data);
+                    const data = decodeData(response.data);
+                    setFilteredRows(data);
                 })
                 .catch(error => {
                     handleLogout();
@@ -385,6 +416,37 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         }
     };
 
+    const handleAveragePrice = () => {
+        const toAsc = asc ? "ASC" : "DESC";
+        axios.get("http://localhost:8080/manager/analytics/averagePricePerCategory?decimalPlaces=2&orderBy=" + "category_name" + "&ascDesc=" + toAsc, {
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem('jwt')
+            }
+        })
+            .then(response => {
+                const data = decodeData2(response.data);
+                setFilteredRows(data)
+                setRows(data);
+            })
+            .catch(error => {
+                handleLogout();
+                console.log("Error fetching data:", error);
+            })
+    }
+
+    // useEffect(() => {
+    //     console.log("filteredRows:", filteredRows);
+    // }, [filteredRows]);
+
+    // useEffect(() => {
+    //     console.log("columnNamesThis:", columnNamesThis);
+    // }, [columnNamesThis]);
+
+    // useEffect(() => {
+    //     setFilteredRows((prev) => prev);
+    // }, [rows]);
+
+
 
     const generatePdf = () => {
         const unit = "pt";
@@ -406,9 +468,9 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         doc.text(footer, (pageWidth - footerWidth) / 2, doc.internal.pageSize.height - 20);
 
         const tableData = [] as any[];
-        const columnNamesEdited = columnNames;
+        const columnNamesEdited = columnNamesThis;
         if (tableName == "Product in the Store") {
-            columnNamesEdited[columnNames.indexOf("Promotional")] = "UPC Promotional"
+            columnNamesEdited[columnNamesThis.indexOf("Promotional")] = "UPC Promotional"
         }
         rows.forEach(row => {
             const data = columnNamesEdited.map((name) =>
@@ -434,6 +496,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
         localStorage.removeItem("username");
         localStorage.removeItem("jwt");
     };
+
 
     if (rows.length != 0) return (
         <>
@@ -463,17 +526,18 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                 Category Average Price
                             </Button>
                         } */}
-                        {(tableName != "Receipt" && localStorage.getItem("role")) != "Manager" ||
+                        {((localStorage.getItem("role") == "Manager" && tableName != "Receipt") || (localStorage.getItem("role") == "Cashier" && (tableName == "Receipt" || tableName == "Customer"))) &&
                             <Button variant="success" onClick={(e) => handleEditModalShow()}>
                                 Add {tableName}
                             </Button>}
-
-                        <Button variant="secondary" onClick={(e) => generatePdf()}>
-                            Print Report
-                        </Button>
-                        {tableName === "Customer Card" && (
+                        {localStorage.getItem("role")?.toLowerCase() == "manager" &&
+                            <Button variant="secondary" onClick={(e) => generatePdf()}>
+                                Print Report
+                            </Button>
+                        }
+                        {/* {tableName === "Customer Card" && (
                             <StarButton />
-                        )}
+                        )} */}
                     </InputGroup>
                     {tableName == "Employee" ?
                         (<div className='flex'>
@@ -504,7 +568,10 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                     onChange={(e: any) => filterByRole(e)}
                                 />
                             </Form>
-                            <Form.Check inline label="Sold Every Product" type="checkbox" value="" onChange={(e: any) => soldEveryProduct(e)} className="ml-12 rounded-none" />
+                            {localStorage.getItem("role")?.toLowerCase() == "manager" &&
+                                <Form.Check inline label="Sold Every Product" type="checkbox" value="" onChange={(e: any) => soldEveryProduct(e)} className="ml-12 rounded-none" />}
+                            {localStorage.getItem("role")?.toLowerCase() == "manager" &&
+                            <Button className="pb-1 pt-1" onClick={() => navigate("/units-sold-by-category")}>Units Sold by Category</Button>}
                         </div>) : (null)
                     }
                     {tableName == "Product in the Store" ?
@@ -536,22 +603,22 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             />
                         </Form>) : (null)
                     }
-                    {tableName == "Customer" &&
+                    {tableName == "Customer" && localStorage.getItem("role")?.toLowerCase() == "manager" &&
                         <div>
                             <Form.Check inline label="Served by Every Cashier" type="checkbox" value="" onChange={(e: any) => servedByEveryCashier(e)} className="ml-2 rounded-none" />
                         </div>
                     }
-                    {tableName == "Category" &&
+                    {/* {tableName == "Category" &&
                         <div>
-                            <Form.Check inline label="Category Average Price" type="checkbox" value="ksk" checked={isAveragePrice} onChange={(e: any) => handleAveragePrice(e)} className="ml-2 rounded-none" />
+                            <Form.Check inline label="Category Average Price" type="checkbox" value="" onChange={(e: any) => handleAveragePrice()} className="ml-2 rounded-none" />
                         </div>
-                    }
+                    } */}
                 </div>
                 <div className='table-wrapper mt-6'>
                     <Table striped hover responsive="sm" className='custom-table'>
                         <thead>
                             <tr>
-                                {columnNames.map((columnName) => (
+                                {columnNamesThis.map((columnName) => (
                                     <th key={columnName} className='unselectable' >
                                         {columnName}{' '}
                                         {sortedBy === columnName ? (
@@ -561,7 +628,18 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                         )}
                                     </th>
                                 ))}
-                                <th className='buttons-column'>Actions</th>
+                                {/* {tableName == "Category" && isAveragePrice &&
+                                    <th key="Avergae Price" className='unselectable' >
+                                        "Avergae Price"{' '}
+                                        {sortedBy === "Avergae Price" ? (
+                                            <BsFillCaretUpFill onClick={() => handleSort("Avergae Price")} />
+                                        ) : (
+                                            <BsFillCaretDownFill onClick={() => handleSort("Avergae Price")} />
+                                        )}
+                                    </th>
+                                } */}
+                                {!(localStorage.getItem("role") == "Cashier" && (tableName == "Product" || tableName == "Category" || tableName == "Product in the Store")) &&
+                                    <th className='buttons-column'>Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -571,7 +649,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                     rowData={row}
                                     onDelete={handleDeleteRow}
                                     onEdit={handleEditRow}
-                                    columnNames={columnNames}
+                                    columnNames={columnNamesThis}
                                 />
                             ))}
                         </tbody>

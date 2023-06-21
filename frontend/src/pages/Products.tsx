@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export async function getAllItemsForDropListCategories() {
     try {
-      const response = await axios.get("http://localhost:8080/manager/category" + "/", {
+      const response = await axios.get("http://localhost:8080/" + localStorage.getItem("role")?.toLowerCase() + "/category" + "/", {
         headers: {
           "Authorization": "Bearer " + localStorage.getItem('jwt')
         }
@@ -28,7 +28,7 @@ export default function Products() {
     const columnNames = ['Id', 'Product', 'Category', 'Characteristics'];
     const columnNamesChange = ['Product', 'Category', 'Characteristics'];
     const tableName= "Product";
-    const endpoint = "http://localhost:8080/manager/product";
+    const endpoint = "http://localhost:8080/" + localStorage.getItem("role")?.toLowerCase() + "/product";
 
     const decodeData = (data: any[]) => {
         const chosenData = data.map((item) => ({
