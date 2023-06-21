@@ -199,7 +199,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                     'Category': item.category_name,
                     'Average Price': item.average_price
                 }));
-                columnNames = ["Id", "Category", "Average Price"]
+                columnNames = ["Id", "Category", "Average Price"];
                 setRows(data);
                 setFilteredRows(data);
             })
