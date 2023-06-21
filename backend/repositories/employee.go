@@ -111,7 +111,8 @@ func (repo *PostgresEmployeeRepository) UpdateEmployeeCredentialsById(employee *
 	updateEmployeeByIdQuery :=
 		`UPDATE employee SET
 		username = $1,
-		password = $2
+		password = $2,
+		is_password_default = false
 		WHERE id_employee = $3
 		RETURNING *;`
 
