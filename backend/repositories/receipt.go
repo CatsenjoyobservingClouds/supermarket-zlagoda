@@ -82,7 +82,7 @@ func (repo *PostgresReceiptRepository) CreateReceipt(employeeUsername string, re
 	return receipt, err
 }
 
-func (repo *PostgresReceiptRepository) GetAllReceipts(orderBy string, ascDesc string) ([]models.Receipt, error) {
+func (repo *PostgresReceiptRepository) GetAllReceipts(orderBy, ascDesc, username string) ([]models.Receipt, error) {
 	getAllReceiptsQuery :=
 		`SELECT 
     		check_number, print_date, sum_total, vat,  
@@ -90,11 +90,18 @@ func (repo *PostgresReceiptRepository) GetAllReceipts(orderBy string, ascDesc st
     		cc.card_number, cust_surname, cust_name, cust_patronymic
 		FROM "check" 
 		    INNER JOIN employee e on e.id_employee = "check".id_employee
-		    LEFT JOIN customer_card cc on "check".card_number = cc.card_number`
-	getAllReceiptsSortedQuery := fmt.Sprintf("%v ORDER BY %s %s", getAllReceiptsQuery, orderBy, ascDesc)
+		    LEFT JOIN customer_card cc on "check".card_number = cc.card_number
+`
+
+	var finalQuery string
+	if username != "" {
+		finalQuery = fmt.Sprintf("%v WHERE username = '%s' ORDER BY %s %s", getAllReceiptsQuery, username, orderBy, ascDesc)
+	} else {
+		finalQuery = fmt.Sprintf("%v ORDER BY %s %s", getAllReceiptsQuery, orderBy, ascDesc)
+	}
 
 	var receipts []models.Receipt
-	err := db.Select(&receipts, getAllReceiptsSortedQuery)
+	err := db.Select(&receipts, finalQuery)
 	if err != nil {
 		return nil, err
 	}

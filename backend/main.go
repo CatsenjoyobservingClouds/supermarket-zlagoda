@@ -150,7 +150,7 @@ func initRouter() *gin.Engine {
 		receiptGroup := cashierGroup.Group("/check")
 		{
 			receiptGroup.POST("/", receiptController.CreateReceipt)
-			receiptGroup.GET("/", receiptController.GetAllReceipts)
+			receiptGroup.GET("/", receiptController.GetAllReceiptsOfOneCashier)
 			receiptGroup.GET("/:check_number", receiptController.GetReceipt)
 		}
 	}

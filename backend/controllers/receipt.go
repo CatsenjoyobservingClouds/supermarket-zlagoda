@@ -9,7 +9,7 @@ import (
 
 type ReceiptRepository interface {
 	CreateReceipt(employeeUsername string, receipt *models.Receipt) (*models.Receipt, error)
-	GetAllReceipts(orderBy string, ascDesc string) ([]models.Receipt, error)
+	GetAllReceipts(orderBy string, ascDesc string, username string) ([]models.Receipt, error)
 	GetAllProductsInReceipt(receiptNumber string, orderBy string, ascDesc string) ([]models.ReceiptProduct, error)
 	GetReceiptByNumber(receiptNumber string) (*models.Receipt, error)
 	DeleteReceiptByNumber(receiptNumber string) error
@@ -60,7 +60,23 @@ func (controller *ReceiptController) GetAllReceipts(context *gin.Context) {
 	receiptsOrderBy := context.DefaultQuery("orderBy", "print_date")
 	receiptsAscDesc := context.DefaultQuery("ascDesc", "DESC")
 
-	receipts, err := controller.ReceiptRepository.GetAllReceipts(receiptsOrderBy, receiptsAscDesc)
+	receipts, err := controller.ReceiptRepository.GetAllReceipts(receiptsOrderBy, receiptsAscDesc, "")
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.Abort()
+
+		return
+	}
+
+	context.JSON(http.StatusOK, receipts)
+}
+
+func (controller *ReceiptController) GetAllReceiptsOfOneCashier(context *gin.Context) {
+	employeeUsername := context.MustGet("username").(string)
+	receiptsOrderBy := context.DefaultQuery("orderBy", "print_date")
+	receiptsAscDesc := context.DefaultQuery("ascDesc", "DESC")
+
+	receipts, err := controller.ReceiptRepository.GetAllReceipts(receiptsOrderBy, receiptsAscDesc, employeeUsername)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		context.Abort()
