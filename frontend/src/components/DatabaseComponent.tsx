@@ -162,27 +162,28 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     }
 
     const fetchAllData = async () => {
-        if(tableName == "Category") {
+        if (tableName == "Category" && localStorage.getItem("role")?.toLowerCase() == "manager") {
             handleAveragePrice();
         } else {
-        axios.get(endpoint + "/", {
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem('jwt')
-            }
-        })
-            .then(response => {
-                const data = decodeData(response.data);
-                setRows(data);
-                setFilteredRows(data);
-                // setIsAveragePrice(false);
-                // if (tableName == "Category") {
-                //     setColumnNamesThis(["Id", "Category"])
-                // }
+            axios.get(endpoint + "/", {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem('jwt')
+                }
             })
-            .catch(error => {
-                handleLogout();
-                console.log("Error fetching data:", error);
-            })
+                .then(response => {
+                    if (tableName == "Category") setColumnNamesThis(["Id", "Category"])
+                    const data = decodeData(response.data);
+                    setRows(data);
+                    setFilteredRows(data);
+                    // setIsAveragePrice(false);
+                    // if (tableName == "Category") {
+                    //     setColumnNamesThis(["Id", "Category"])
+                    // }
+                })
+                .catch(error => {
+                    handleLogout();
+                    console.log("Error fetching data:", error);
+                })
         }
         // }
     };
@@ -299,6 +300,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     //     setRows((prevRows) => [...prevRows, newRow]);
     // };
 
+    const sortAsNumber = ["Salary, UAH", "Discount Percent", "Average Price", "Id", "Selling Price, UAH", "Amount", "UPC", "Phone Number"]
     const handleSort = (key: string) => {
         if (sortedBy === key) {
             setAsc((prev) => !prev)
@@ -308,9 +310,13 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 setFilteredRows((prevRows) =>
                     [...prevRows].sort((a, b) => (parseInt(a[key].substring(5), 10) > parseInt(b[key].substring(5), 10) ? 1 : -1))
                 )
+            } else if (sortAsNumber.includes(key)) {
+                setFilteredRows((prevRows) =>
+                    [...prevRows].sort((a, b) => (parseFloat(a[key]) > parseFloat(b[key]) ? 1 : -1))
+                )
             } else {
                 setFilteredRows((prevRows) =>
-                    [...prevRows].sort((a, b) => (parseInt(a[key]) > parseInt(b[key]) ? 1 : -1))
+                    [...prevRows].sort((a, b) => ((a[key] > b[key]) ? 1 : -1))
                 );
             }
         }
@@ -518,17 +524,18 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                 Category Average Price
                             </Button>
                         } */}
-                        {(tableName != "Receipt" && localStorage.getItem("role")) != "Manager" ||
+                        {((localStorage.getItem("role") == "Manager" && tableName!="Receipt") || (localStorage.getItem("role") == "Cashier" && (tableName == "Receipt" || tableName=="Customer"))) &&
                             <Button variant="success" onClick={(e) => handleEditModalShow()}>
                                 Add {tableName}
                             </Button>}
-
-                        <Button variant="secondary" onClick={(e) => generatePdf()}>
-                            Print Report
-                        </Button>
-                        {tableName === "Customer Card" && (
+                        {localStorage.getItem("role")?.toLowerCase() == "manager" &&
+                            <Button variant="secondary" onClick={(e) => generatePdf()}>
+                                Print Report
+                            </Button>
+                        }
+                        {/* {tableName === "Customer Card" && (
                             <StarButton />
-                        )}
+                        )} */}
                     </InputGroup>
                     {tableName == "Employee" ?
                         (<div className='flex'>
@@ -559,7 +566,8 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                     onChange={(e: any) => filterByRole(e)}
                                 />
                             </Form>
-                            <Form.Check inline label="Sold Every Product" type="checkbox" value="" onChange={(e: any) => soldEveryProduct(e)} className="ml-12 rounded-none" />
+                            {localStorage.getItem("role")?.toLowerCase() == "manager" &&
+                                <Form.Check inline label="Sold Every Product" type="checkbox" value="" onChange={(e: any) => soldEveryProduct(e)} className="ml-12 rounded-none" />}
                         </div>) : (null)
                     }
                     {tableName == "Product in the Store" ?
@@ -591,16 +599,16 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             />
                         </Form>) : (null)
                     }
-                    {tableName == "Customer" &&
+                    {tableName == "Customer" && localStorage.getItem("role")?.toLowerCase() == "manager" &&
                         <div>
                             <Form.Check inline label="Served by Every Cashier" type="checkbox" value="" onChange={(e: any) => servedByEveryCashier(e)} className="ml-2 rounded-none" />
                         </div>
                     }
-                    {tableName == "Category" &&
+                    {/* {tableName == "Category" &&
                         <div>
                             <Form.Check inline label="Category Average Price" type="checkbox" value="" onChange={(e: any) => handleAveragePrice()} className="ml-2 rounded-none" />
                         </div>
-                    }
+                    } */}
                 </div>
                 <div className='table-wrapper mt-6'>
                     <Table striped hover responsive="sm" className='custom-table'>
@@ -626,7 +634,8 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                         )}
                                     </th>
                                 } */}
-                                <th className='buttons-column'>Actions</th>
+                                {!(localStorage.getItem("role") == "Cashier" && (tableName == "Product" || tableName == "Category" || tableName == "Product in the Store")) &&
+                                <th className='buttons-column'>Actions</th>}
                             </tr>
                         </thead>
                         <tbody>

@@ -52,7 +52,7 @@ export const columnNames = ['Id', 'Username', 'Full Name', 'Role', 'Salary, UAH'
 export default function Employees() {
     const columnNamesChange = ['Name', 'Surname', 'Patronymic', 'Role', 'Salary, UAH', 'Date of Birth', 'Start Working Date', 'Phone Number', 'City', 'Street', 'Zip Code'];
     
-    const endpoint = "http://localhost:8080/manager/employee";
+    const endpoint = "http://localhost:8080/" + localStorage.getItem("role")?.toLowerCase() + "/employee";
     const tableName = "Employee";
 
 

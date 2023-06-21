@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button} from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import '../css-files/RowComponent.css';
 import { ReceiptButton } from '../components/Buttons';
 
@@ -25,7 +25,7 @@ const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, 
         (columnName != "Promotional" ? (
           <td key={columnName} className='unselectable'>
             <input
-              className={columnName=="Product"|| columnName=="Characteristics" || columnName=="Product Info" ? "w-full" : "" }
+              className={columnName == "Product" || columnName == "Characteristics" || columnName == "Product Info" ? "w-full" : ""}
               readOnly
               type="text"
               value={row[columnName]}
@@ -43,21 +43,23 @@ const RowComponent: React.FC<RowComponentProps> = ({ rowData, onDelete, onEdit, 
           </td>))
       ))}
 
-      <td className='unselectable buttons-column d-flex align-middle justify-center'>
-        {rowData["VAT, UAH"] != null &&
-          <ReceiptButton handleReceiptClick={() => handleReceiptClick?.(row["Id"], row)} />
-        }
-        {rowData["VAT, UAH"] == null &&
-          <Button variant="primary" onClick={(e) => onEdit(row["Id"], row)} className='update-button'>
-            Edit
-          </Button>
-        }
-        {(rowData["VAT, UAH"] != null || localStorage.getItem("role") != "Cashier") &&
-          <Button variant="danger" onClick={(e) => onDelete(row["Id"])} className='delete-button'>
-            Delete
-          </Button>
-        }
-      </td>
+      {!(localStorage.getItem("role") == "Cashier" && ((rowData["Category"] != null && rowData["Product"] == null) || rowData["Characteristics"] != null || rowData["Promotional"] != null)) && !(rowData["Amount Sold"] != null) &&
+        <td className='unselectable buttons-column d-flex align-middle justify-center'>
+          {rowData["VAT, UAH"] != null &&
+            <ReceiptButton handleReceiptClick={() => handleReceiptClick?.(row["Id"], row)} />
+          }
+          {((localStorage.getItem("role") == "Manager" && rowData["VAT, UAH"] == null) || (localStorage.getItem("role") == "Cashier" && rowData["Discount Percent"] != null)) &&
+            <Button variant="primary" onClick={(e) => onEdit(row["Id"], row)} className='update-button'>
+              Edit
+            </Button>
+          }
+          {(localStorage.getItem("role") == "Manager") &&
+            <Button variant="danger" onClick={(e) => onDelete(row["Id"])} className='delete-button'>
+              Delete
+            </Button>
+          }
+        </td>
+      }
 
     </tr>
   )

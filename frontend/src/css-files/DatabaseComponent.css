@@ -183,14 +183,14 @@ Table thead {
     margin-bottom: 10px;
 } 
 
-#datepicker-2 {
-    display: flex;
-    margin-right: 10px; 
-    flex-direction: row;
+#datepicker-2{
+    width: 100%;
 }
 
-#date-time-picker {
-    display: flex;
-    flex-direction: column;
-    margin-right: 10px; 
-  }
+.react-datepicker-wrapper {
+    width: 100%;
+}
+
+#date-time-picker{
+    width: 100%;
+}

@@ -1,6 +1,5 @@
 import React from 'react';
 import DatabaseComponent from '../components/DatabaseComponent';
-import axios from 'axios';
 
 export const decodeData = (data: any[]) => {
     const chosenData = data.map((item) => ({
@@ -27,23 +26,12 @@ export const encodeData = (data: any[]) => {
     return chosenData;
 }
 
-// export const handleAveragePrice = async (asc: boolean) => {
-//     // if (e.target.checked) {
-//     const toAsc = asc ? "ASC" : "DESC";
-//     return await axios.get("http://localhost:8080/manager/analytics/averagePricePerCategory?decimalPlaces=2&orderBy=" + "category_name" + "&ascDesc=" + toAsc, {
-//         headers: {
-//             "Authorization": "Bearer " + localStorage.getItem('jwt')
-//         }
-//     })
-//     // }
-// }
-
 export default function Categories() {
     const rowData = {};
     const columnNames = ['Id', 'Category', 'Average Price'];
     const columnNamesChange = ['Category'];
     const tableName= "Category";
-    const endpoint = "http://localhost:8080/manager/category";
+    const endpoint = "http://localhost:8080/" + localStorage.getItem("role")?.toLowerCase() + "/category";
     
     return (
         <main>

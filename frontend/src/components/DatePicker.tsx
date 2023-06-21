@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { InputGroup, Button } from 'react-bootstrap';
@@ -16,8 +16,15 @@ const DatePickerInput: React.FC<DatePickerProps> = ({ handleDateChange, columnNa
 
   const handleDate = (date: Date) => {
     setEditedDate(date)
+    console.log(date)
     handleDateChange(date, columnName)
   }
+
+  // useEffect(() => {
+  //   setEditedDate(editedDate)
+  //   console.log(editedDate)
+  //   handleDateChange(editedDate, columnName)
+  // }, [editedDate, selectedDate]);
 
 
   return (
@@ -42,7 +49,7 @@ const DatePickerInput: React.FC<DatePickerProps> = ({ handleDateChange, columnNa
             onChange={handleDate}
             dateFormat="dd.MM.yyyy"
             placeholderText='dd.mm.yyyy'
-            className="form-control"
+            // className="form-control"
           />
         </div>
       )}
