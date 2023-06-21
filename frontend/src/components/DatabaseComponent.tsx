@@ -8,6 +8,7 @@ import { IIndexable } from '../App';
 import '../css-files/DatabaseComponent.css';
 import autoTable from "jspdf-autotable";
 import jsPDF from 'jspdf';
+import { useNavigate } from 'react-router';
 import Report from '../pages/Report';
 import DatePickerInput from './DatePicker';
 import DropdownList from './DropdownList';
@@ -45,6 +46,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
     const alertWrongNewData = wrongNewData === true && (
         <Alert variant="danger">{error?.charAt(0).toUpperCase() + error?.slice(1)}</Alert>
     );
+    const navigate = useNavigate();
 
     const handleEditModalShow = () => {
         setShowEditModal(true);
@@ -524,7 +526,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                 Category Average Price
                             </Button>
                         } */}
-                        {((localStorage.getItem("role") == "Manager" && tableName!="Receipt") || (localStorage.getItem("role") == "Cashier" && (tableName == "Receipt" || tableName=="Customer"))) &&
+                        {((localStorage.getItem("role") == "Manager" && tableName != "Receipt") || (localStorage.getItem("role") == "Cashier" && (tableName == "Receipt" || tableName == "Customer"))) &&
                             <Button variant="success" onClick={(e) => handleEditModalShow()}>
                                 Add {tableName}
                             </Button>}
@@ -568,6 +570,8 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             </Form>
                             {localStorage.getItem("role")?.toLowerCase() == "manager" &&
                                 <Form.Check inline label="Sold Every Product" type="checkbox" value="" onChange={(e: any) => soldEveryProduct(e)} className="ml-12 rounded-none" />}
+                            {localStorage.getItem("role")?.toLowerCase() == "manager" &&
+                            <Button className="pb-1 pt-1" onClick={() => navigate("/units-sold-by-category")}>Units Sold by Category</Button>}
                         </div>) : (null)
                     }
                     {tableName == "Product in the Store" ?
@@ -635,7 +639,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                                     </th>
                                 } */}
                                 {!(localStorage.getItem("role") == "Cashier" && (tableName == "Product" || tableName == "Category" || tableName == "Product in the Store")) &&
-                                <th className='buttons-column'>Actions</th>}
+                                    <th className='buttons-column'>Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
