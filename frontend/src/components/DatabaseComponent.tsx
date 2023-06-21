@@ -286,7 +286,8 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                 setFilteredRows((prevRows) => prevRows.filter((row) => row["Id"] != id));
             })
             .catch(error => {
-                handleLogout();
+                window.alert("Cannot delete this information, it is connected to other data.")
+                // handleLogout();
                 console.log("Error deleting data:", error);
             })
     };

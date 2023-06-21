@@ -369,7 +369,8 @@ const Receipts = () => {
                 setRows((prevRows) => prevRows.filter((row) => row["Id"] != id));
             })
             .catch(error => {
-                handleLogout();
+                // handleLogout();
+                window.alert("Cannot delete this information, it is connected to other data.")
                 console.log("Error deleting data:", error);
             })
     };
