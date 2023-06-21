@@ -15,11 +15,6 @@ import DropdownList from '../components/DropdownList';
 import { parse, format } from 'date-fns';
 
 
-
-
-//без редагування та додавання - лише видал та звіт для менеджерів
-//продавщики маю мати змогу робити  усе
-
 const Receipts = () => {
     const columnNames = ['Receipt', 'Employee', 'Customer', 'Card Number', 'Print Date', 'Total Sum, UAH', 'VAT, UAH'];
     const columnNamesChange = ['Receipt Number', 'Employee Full Name', 'Customer Full Name', 'Card Number', 'Print Date'];
@@ -77,7 +72,7 @@ const Receipts = () => {
     const [isAveragePrice, setIsAveragePrice] = useState<boolean>(false);
     const [asc, setAsc] = useState<boolean>(true);
     const [empty, setEmpty] = useState<boolean>(false);
-    const [dateRange, setDateRange] = useState<any>({ "From": new Date().toLocaleDateString(), "To": new Date().toLocaleDateString() })
+    const [dateRange, setDateRange] = useState<any>({ "From": new Date("01-01-1899").toLocaleDateString(), "To": new Date().toLocaleDateString() })
 
 
     const [newRow, setNewRow] = useState<RowData>(
@@ -149,6 +144,7 @@ const Receipts = () => {
 
 
     const handleDateChange = (date: Date, column: any) => {
+        setTotalSum(undefined);
         setWrongNewData(false)
         setDateRange((prevDate: any) => ({
             ...prevDate,
@@ -167,11 +163,11 @@ const Receipts = () => {
     };
 
     const submitDate = () => {
-        if(dateRange["From"] == null || dateRange["To"] == null){
+        if (dateRange["From"] == null || dateRange["To"] == null) {
             setFilteredRows(rows)
             return
         }
-        if(dateRange["From"] == dateRange["To"]) {
+        if (dateRange["From"] == dateRange["To"]) {
             console.log("==")
             setFilteredRows(rows.filter((filteredRow) => filteredRow["Print Date"] == dateRange["To"]))
             return
@@ -181,15 +177,16 @@ const Receipts = () => {
         // console.log(new Date(dateRange["From"]))
         // console.log(new Date(dateRange["To"]))
         // console.log(from == to)
-        if(from > to){
-            window.alert("From Date cannot be bigger than To Date!")
-            // setDateRange({
-            //     "From": new Date().toLocaleDateString(),
-            //     "To": new Date().toLocaleDateString()
-            // });
+        if (from > new Date() || to > new Date()) {
+            window.alert("The future is unpredictable!")
             setFilteredRows(rows)
             return
-        }else {
+        }
+        if (from > to) {
+            window.alert("From date cannot be bigger than To date!")
+            setFilteredRows(rows)
+            return
+        } else {
             setWrongNewData(false)
             console.log("<")
 
@@ -197,60 +194,63 @@ const Receipts = () => {
                 // console.log(filteredRow["Print Date"]);
                 // console.log(dateRange["To"])
                 // console.log()
-                return parse(filteredRow["Print Date"], 'dd.MM.yyyy', new Date()) <  to && parse(filteredRow["Print Date"], 'dd.MM.yyyy', new Date()) > from}))
-                return
-
-            // setFilteredRows(filteredRows.filter(
-            //     (row) => (row["Print Date"] < dateRange["To"] && row["Print Date"] > dateRange["From"]));
-            // ))
-
-            // setFilteredRows(rows.filter(
-            //     (row) => (row["Role"].includes(e.target.id))
-            // ))
+                return parse(filteredRow["Print Date"], 'dd.MM.yyyy', new Date()) < to && (parse(filteredRow["Print Date"], 'dd.MM.yyyy', new Date()) > from || filteredRow["Print Date"] == dateRange["From"])
+            }))
+            return
         }
-        
-        // if(dateRange["From"] > dateRange["To"]){
-        //     // window.alert("From Date cannot be bigger than To Date!")
-        //     setDateRange({
-        //         "From": new Date().toLocaleDateString(),
-        //         "To": new Date().toLocaleDateString()
-        //     });
-        //     return
-            
-        // } else if (dateRange["From"] == dateRange["To"]){
-        //     console.log("==")
-        //     setFilteredRows(rows.filter((filteredRow) => filteredRow["Print Date"] == dateRange["To"]))
-        //     return
-
-        // }else {
-        //     setWrongNewData(false)
-        //     console.log("<")
-
-        //     setFilteredRows(rows.filter((filteredRow) => {
-        //         // console.log(filteredRow["Print Date"]);
-        //         // console.log(dateRange["To"])
-        //         // console.log()
-        //         return filteredRow["Print Date"] <=  dateRange["To"] && filteredRow["Print Date"] > dateRange["From"]}))
-        //         return
-
-        //     // setFilteredRows(filteredRows.filter(
-        //     //     (row) => (row["Print Date"] < dateRange["To"] && row["Print Date"] > dateRange["From"]));
-        //     // ))
-
-        //     // setFilteredRows(rows.filter(
-        //     //     (row) => (row["Role"].includes(e.target.id))
-        //     // ))
-        // }
-        
     }
-        // setWrongNewData(false)
-        // setNewRow((prevState) => ({
-        //     ...prevState,
-        //     receiptInfo: {
-        //         ...prevState.receiptInfo,
-        //         [key]: date?.toLocaleString(),
-        //     },
-        // }));
+
+    // setFilteredRows(filteredRows.filter(
+    //     (row) => (row["Print Date"] < dateRange["To"] && row["Print Date"] > dateRange["From"]));
+    // ))
+
+    // setFilteredRows(rows.filter(
+    //     (row) => (row["Role"].includes(e.target.id))
+    // ))
+
+
+    // if(dateRange["From"] > dateRange["To"]){
+    //     // window.alert("From Date cannot be bigger than To Date!")
+    //     setDateRange({
+    //         "From": new Date().toLocaleDateString(),
+    //         "To": new Date().toLocaleDateString()
+    //     });
+    //     return
+
+    // } else if (dateRange["From"] == dateRange["To"]){
+    //     console.log("==")
+    //     setFilteredRows(rows.filter((filteredRow) => filteredRow["Print Date"] == dateRange["To"]))
+    //     return
+
+    // }else {
+    //     setWrongNewData(false)
+    //     console.log("<")
+
+    //     setFilteredRows(rows.filter((filteredRow) => {
+    //         // console.log(filteredRow["Print Date"]);
+    //         // console.log(dateRange["To"])
+    //         // console.log()
+    //         return filteredRow["Print Date"] <=  dateRange["To"] && filteredRow["Print Date"] > dateRange["From"]}))
+    //         return
+
+    //     // setFilteredRows(filteredRows.filter(
+    //     //     (row) => (row["Print Date"] < dateRange["To"] && row["Print Date"] > dateRange["From"]));
+    //     // ))
+
+    //     // setFilteredRows(rows.filter(
+    //     //     (row) => (row["Role"].includes(e.target.id))
+    //     // ))
+    // }
+
+
+    // setWrongNewData(false)
+    // setNewRow((prevState) => ({
+    //     ...prevState,
+    //     receiptInfo: {
+    //         ...prevState.receiptInfo,
+    //         [key]: date?.toLocaleString(),
+    //     },
+    // }));
 
     const handleNewChangeFromList = (opt: any, columnName: string) => {
         setWrongNewData(false);
@@ -337,20 +337,7 @@ const Receipts = () => {
         })
             .then(response => {
                 let data = decodeData(response.data) as any[];
-                // if(localStorage.getItem("role") == "Cashier") {
-                //     // const id_empl = fetchDataCashier();
-                //     console.log(id_empl)
-                //     console.log(data[0]["Id Employee"])
-                //     data = data.filter((item: any) => {
-                //         console.log(item["Id Employee"] == id_empl  )
-                //      return item["Id Employee"] == id_empl   
-                // })
-                //     if(data.length == 0){
-                //         setEmpty(true);+
-                //     } else {
-                //         setEmpty(false);
-                //     }
-                // }
+
                 setRows(data);
                 setFilteredRows(data);
             })
@@ -360,51 +347,13 @@ const Receipts = () => {
             })
     };
 
-    // const fetchDataCashier = () => {
-    //     axios.get("http://localhost:8080/self/", {
-    //         headers: {
-    //             "Authorization": "Bearer " + localStorage.getItem('jwt')
-    //         }
-    //     })
-    //         .then(response => {
-    //             return response?.data["id_employee"]
-    //         })
-    //         .catch(error => {
-    //             console.log("Error fetching data:", error);
-    //         })
-    // };
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
         setWrongNewData(false)
-        // ((prevData) => ({
-        //     ...prevData,
-        //     [key]: e.target.value,
-        // }));
+
     };
-    // const filteredRowsGet = () => {
-    //     if (tableName == "Category" && isAveragePrice) {
-    //         if (dataWithAveragePrice.length != 0) {
-    //             return dataWithAveragePrice
-    //         } else {
-    //             return handleGetAveragePrice();
-    //         }
-    //     }
 
-    //     if(sortedBy !== ""){
-    //         handleSort(sortedBy);
-    //     }
-
-    //     return filteredRows
-
-    //     filteredRows.filter(
-    //     (row) =>
-    //         columnNames.some((columnName) => {
-    //             const value = String(row[columnName]).toLowerCase();
-    //             return value.includes(searchText.toLowerCase());
-    //         })
-    // );
-    // }
 
     const handleDeleteRow = (id: string) => {
         console.log('Deleting... ' + id);
@@ -426,15 +375,7 @@ const Receipts = () => {
     };
 
 
-    // const handleAddRow = () => {
-    //     const newRow: RowData = {
-    //         Id: rows.length + 1,
-    //     };
-    //     columnNames.forEach((columnName) => {
-    //         newRow[columnName] = '';
-    //     });
-    //     setRows((prevRows) => [...prevRows, newRow]);
-    // };
+
 
     const handleSort = (key: string) => {
         if (sortedBy === key) {
@@ -502,6 +443,7 @@ const Receipts = () => {
     }, [editedRow]);
 
     const filterByCashier = (opt: any, columnName: any) => {
+        setTotalSum(0);
         if (opt == null) {
             setFilteredRows(rows)
             return
@@ -511,6 +453,16 @@ const Receipts = () => {
             (row) => (employees?.includes(row["Id Employee"]))
         ))
     };
+
+    const [totalSum, setTotalSum] = useState<number>();
+
+    const handleSum = (e: any) => {
+        let sum = 0;
+        filteredRows.forEach((row) => {
+            sum += parseFloat(row["Total Sum, UAH"])
+        })
+        setTotalSum(parseFloat(sum.toFixed(2)));
+    }
 
 
     const generatePdf = () => {
@@ -575,20 +527,7 @@ const Receipts = () => {
                             onClick={(e) => handleSearch(e)}>
                             <BsSearch />
                         </Button>
-                        {/* {tableName == "Product" &&
-                            <DropdownList key={"Category" + "-dropdown"}
-                                passChosenOption={filterByCategory}
-                                columnName={"Category"}
-                                multiValue={true}
-                                defaultValue={"Pick Categories"}
-                            />
-                        } */}
-                        {/* {tableName == "Category" &&
 
-                            <Button variant="primary" onClick={handleAveragePrice}>
-                                Category Average Price
-                            </Button>
-                        } */}
                         {(localStorage.getItem("role") == "Manager") &&
                             <DropdownList key={"Employee" + "-dropdown"}
                                 passChosenOption={filterByCashier}
@@ -606,106 +545,48 @@ const Receipts = () => {
                                 Print Report
                             </Button>
                         }
-                        {/* <DateRangePicker
-                            initialSettings={{ startDate: '01/01/2020', endDate: '01/15/2020' }}
-                        >
-                            <input type="text" className="form-control" />
-                        </DateRangePicker> */}
 
                     </InputGroup>
-                    <div className='flex special'>
-                        <div className="flex gap-3 pb-1 pt-1">
+                    <InputGroup>
+                        {/* <div className='flex special'> */}
+                        <div className="flex gap-3 pb-1 pt-1 mr-1">
                             {/* <Form.Group controlId={`form${"From"}`} key={"From"}> */}
-                                <label className="font-semibold">From: </label>
-                                <DatePickerInput
-                                    handleDateChange={handleDateChange}
-                                    columnName="From"
-                                    selectedDate={dateRange["From"]} />
+                            <label className="font-semibold">From: </label>
+                            <DatePickerInput
+                                handleDateChange={handleDateChange}
+                                columnName="From"
+                                selectedDate={dateRange["From"]} />
                             {/* </Form.Group> */}
 
                         </div>
-                        <div className="flex gap-3 pb-1 pt-1">
+                        <div className="flex gap-3 pb-1 pt-1 mr-1">
                             {/* <Form.Group controlId={`form${"To"}`} key={"To"}> */}
-                                <label className="font-semibold">To: </label>
-                                <DatePickerInput
-                                    handleDateChange={handleDateChange}
-                                    columnName="To"
-                                    selectedDate={dateRange["To"]} />
+                            <label className="font-semibold">To: </label>
+                            <DatePickerInput
+                                handleDateChange={handleDateChange}
+                                columnName="To"
+                                selectedDate={dateRange["To"]} />
                             {/* </Form.Group> */}
                         </div>
                         <Button className="pb-1 pt-1" onClick={() => submitDate()}>Filter by Date</Button>
-                    </div>
-                    {/* {tableName == "Employee" ?
-                        (<div className='flex'>
-                            <Form>
-                                <Form.Check
-                                    inline
-                                    defaultChecked
-                                    label="All"
-                                    type="radio"
-                                    name="optradio"
-                                    id="All"
-                                    onChange={(e: any) => filterByRole(e)}
+                        <div className='mr-16'></div>
+                        {localStorage.getItem("role") == "Manager" &&
+                            <>
+                                <FormControl className='sum-form pb-1 pt-1'
+                                    readOnly
+                                    placeholder="UAH"
+                                    value={totalSum}
                                 />
-                                <Form.Check
-                                    inline
-                                    label="Cashiers"
-                                    type="radio"
-                                    name="optradio"
-                                    id="Cashier"
-                                    onChange={(e: any) => filterByRole(e)}
-                                />
-                                <Form.Check
-                                    inline
-                                    label="Managers"
-                                    type="radio"
-                                    name="optradio"
-                                    id="Manager"
-                                    onChange={(e: any) => filterByRole(e)}
-                                />
-                            </Form>
-                            <Form.Check inline label="Sold Every Product" type="checkbox" value="" onChange={(e: any) => soldEveryProduct(e)} className="ml-12 rounded-none" />
-                        </div>) : (null)
-                    }
-                    {tableName == "Product in the Store" ?
-                        (<Form>
-                            <Form.Check
-                                inline
-                                defaultChecked
-                                label="All"
-                                type="radio"
-                                name="optradio"
-                                id="All"
-                                onChange={(e: any) => filterByPromote(e)}
-                            />
-                            <Form.Check
-                                inline
-                                label="Promotional"
-                                type="radio"
-                                name="optradio"
-                                id="Promotional"
-                                onChange={(e: any) => filterByPromote(e)}
-                            />
-                            <Form.Check
-                                inline
-                                label="Not Promotional"
-                                type="radio"
-                                name="optradio"
-                                id="Not_Promotional"
-                                onChange={(e: any) => filterByPromote(e)}
-                            />
-                        </Form>) : (null)
-                    }
-                    {tableName == "Customer" &&
-                        <div>
-                            <Form.Check inline label="Served by Every Cashier" type="checkbox" value="" onChange={(e: any) => servedByEveryCashier(e)} className="ml-2 rounded-none" />
-                        </div>
-                    }
-                    {tableName == "Category" &&
-                        <div>
-                            <Form.Check inline label="Category Average Price" type="checkbox" value="ksk" checked={isAveragePrice} onChange={(e: any) => handleAveragePrice(e)} className="ml-2 rounded-none" />
-                        </div>
-                    } */}
+                                <Button className="pb-1 pt-1"
+                                    onClick={(e) => handleSum(e)}>
+                                    Total Sum
+                                </Button>
+                            </>
+                        }
+                    </InputGroup>
+                    <InputGroup>
+
+                    </InputGroup>
                 </div>
                 <div className='table-wrapper mt-6'>
                     <Table striped hover responsive="sm" className='custom-table'>

@@ -571,7 +571,7 @@ const DatabaseComponent: React.FC<DatabaseComponentProps> = ({ endpoint, decodeD
                             {localStorage.getItem("role")?.toLowerCase() == "manager" &&
                                 <Form.Check inline label="Sold Every Product" type="checkbox" value="" onChange={(e: any) => soldEveryProduct(e)} className="ml-12 rounded-none" />}
                             {localStorage.getItem("role")?.toLowerCase() == "manager" &&
-                            <Button className="pb-1 pt-1" onClick={() => navigate("/units-sold-by-category")}>Units Sold by Category</Button>}
+                            <Button className="pt-0 pb-0 ml-10" onClick={() => navigate("/units-sold-by-category")}>Units Sold by Category</Button>}
                         </div>) : (null)
                     }
                     {tableName == "Product in the Store" ?

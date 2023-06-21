@@ -194,3 +194,8 @@ Table thead {
 #date-time-picker{
     width: 100%;
 }
+
+.sum-form {
+    max-width:95px;
+    display: inline;
+}

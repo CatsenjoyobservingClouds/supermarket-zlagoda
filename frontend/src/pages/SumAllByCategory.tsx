@@ -162,7 +162,6 @@ const SumAllByCategory = () => {
             fetchAllData(4);
             return
         }
-        // const categoryId = 
         setCategory(opt?.value)
 
         fetchAllData(opt?.value);
@@ -310,20 +309,6 @@ const SumAllByCategory = () => {
         })
             .then(response => {
                 let data = decodeData(response.data) as any[];
-                // if(localStorage.getItem("role") == "Cashier") {
-                //     // const id_empl = fetchDataCashier();
-                //     console.log(id_empl)
-                //     console.log(data[0]["Id Employee"])
-                //     data = data.filter((item: any) => {
-                //         console.log(item["Id Employee"] == id_empl  )
-                //      return item["Id Employee"] == id_empl   
-                // })
-                //     if(data.length == 0){
-                //         setEmpty(true);+
-                //     } else {
-                //         setEmpty(false);
-                //     }
-                // }
                 setRows(data);
                 setFilteredRows(data);
             })
@@ -549,98 +534,7 @@ const SumAllByCategory = () => {
                             columnName={"Category"}
                             defaultValue={"Snacks   "}
                         />
-
-                        {/* {tableName == "Category" &&
-
-                            <Button variant="primary" onClick={handleAveragePrice}>
-                                Category Average Price
-                            </Button>
-                        } */}
-                        {/* {(localStorage.getItem("role") == "Manager") &&
-                            <DropdownList key={"Employee" + "-dropdown"}
-                                passChosenOption={filterByCashier}
-                                columnName={"Employee"}
-                                defaultValue={"Pick Cashier...   "}
-                            />
-                        } */}
-                        {/* <DateRangePicker
-                            initialSettings={{ startDate: '01/01/2020', endDate: '01/15/2020' }}
-                        >
-                            <input type="text" className="form-control" />
-                        </DateRangePicker> */}
-
                     </InputGroup>
-                    {/* {tableName == "Employee" ?
-                        (<div className='flex'>
-                            <Form>
-                                <Form.Check
-                                    inline
-                                    defaultChecked
-                                    label="All"
-                                    type="radio"
-                                    name="optradio"
-                                    id="All"
-                                    onChange={(e: any) => filterByRole(e)}
-                                />
-                                <Form.Check
-                                    inline
-                                    label="Cashiers"
-                                    type="radio"
-                                    name="optradio"
-                                    id="Cashier"
-                                    onChange={(e: any) => filterByRole(e)}
-                                />
-                                <Form.Check
-                                    inline
-                                    label="Managers"
-                                    type="radio"
-                                    name="optradio"
-                                    id="Manager"
-                                    onChange={(e: any) => filterByRole(e)}
-                                />
-                            </Form>
-                            <Form.Check inline label="Sold Every Product" type="checkbox" value="" onChange={(e: any) => soldEveryProduct(e)} className="ml-12 rounded-none" />
-                        </div>) : (null)
-                    }
-                    {tableName == "Product in the Store" ?
-                        (<Form>
-                            <Form.Check
-                                inline
-                                defaultChecked
-                                label="All"
-                                type="radio"
-                                name="optradio"
-                                id="All"
-                                onChange={(e: any) => filterByPromote(e)}
-                            />
-                            <Form.Check
-                                inline
-                                label="Promotional"
-                                type="radio"
-                                name="optradio"
-                                id="Promotional"
-                                onChange={(e: any) => filterByPromote(e)}
-                            />
-                            <Form.Check
-                                inline
-                                label="Not Promotional"
-                                type="radio"
-                                name="optradio"
-                                id="Not_Promotional"
-                                onChange={(e: any) => filterByPromote(e)}
-                            />
-                        </Form>) : (null)
-                    }
-                    {tableName == "Customer" &&
-                        <div>
-                            <Form.Check inline label="Served by Every Cashier" type="checkbox" value="" onChange={(e: any) => servedByEveryCashier(e)} className="ml-2 rounded-none" />
-                        </div>
-                    }
-                    {tableName == "Category" &&
-                        <div>
-                            <Form.Check inline label="Category Average Price" type="checkbox" value="ksk" checked={isAveragePrice} onChange={(e: any) => handleAveragePrice(e)} className="ml-2 rounded-none" />
-                        </div>
-                    } */}
                 </div>
                 <div className='table-wrapper mt-6'>
                     <Table striped hover responsive="sm" className='custom-table'>

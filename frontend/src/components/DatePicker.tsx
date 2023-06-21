@@ -44,7 +44,7 @@ const DatePickerInput: React.FC<DatePickerProps> = ({ handleDateChange, columnNa
         </div>
       ) : (
         <div id='datepicker'>
-          <DatePicker
+          <DatePicker className={(columnName == "From" || columnName=="To") ? "w-24" : ""}
             selected={editedDate}
             onChange={handleDate}
             dateFormat="dd.MM.yyyy"
